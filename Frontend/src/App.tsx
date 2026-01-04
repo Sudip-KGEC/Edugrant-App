@@ -168,7 +168,7 @@ const App = () => {
 
   setIsLoading(true);
   try {
-    const response = await api.post('/scholarships/apply', { scholarshipId: schId });
+    const response = await api.post('/api/scholarships/apply', { scholarshipId: schId });
 
     setCurrentUser(prev => prev ? ({
       ...prev,
