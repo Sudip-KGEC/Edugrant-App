@@ -3,7 +3,7 @@ import axios from 'axios';
 import { GeminiHistoryItem } from '../../types';
 
 
-const API_URL = `${process.env.VITE_BACKEND_URL/api/chat}`; 
+const API_URL = `${import.meta.env.VITE_BACKEND_URL}/api/chat`;
 
 export const sendMessageToGemini = async (message: string, history: GeminiHistoryItem[]) => {
   try {
