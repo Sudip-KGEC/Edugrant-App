@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // Ensure this matches your Render URL in Vercel settings
-const BASE_URL = "https://edugrant-backend.onrender.com/api";
+const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
 
 export const api = axios.create({
   baseURL: BASE_URL,
@@ -48,10 +48,9 @@ export const fetchScholarships = async (adminId?: string) => {
 
 export const createScholarship = async (scholarshipData: any) => {
   const response = await api.post('/scholarships', scholarshipData);
-  // Optimization: Standardizing the ID field immediately
   return {
     ...response.data,
-    id: response.data._id || response.data.id 
+    id: response.data._id
   };
 };
 
