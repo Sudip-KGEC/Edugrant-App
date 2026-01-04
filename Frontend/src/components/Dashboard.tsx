@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, Clock} from 'lucide-react';
 import axios from 'axios';
 import AdminDashboard from './AdminDashboard';
-import { Application, ApplicationStatus, ScholarshipForm } from '../types';
+import { Application, ApplicationStatus, ScholarshipForm } from '../../types';
 import ProfileHeader from './ProfileHeader';
 
 const Dashboard = ({ t, currentUser, scholarships, setView }) => {

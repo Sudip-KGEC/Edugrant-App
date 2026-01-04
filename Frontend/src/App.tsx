@@ -13,8 +13,8 @@ import {
 } from 'lucide-react';
 
 import { TRANSLATIONS } from './constants';
-import { ScholarshipForm, Application, User, Language } from './types';
-import { fetchScholarships, registerUser, verifyOtp, createScholarship, sendOtp } from './services/api';
+import { ScholarshipForm, Application, User, Language } from '../types';
+import { api, fetchScholarships, getUserProfile, registerUser, verifyOtp, createScholarship, sendOtp, logoutUser } from './services/api';
 
 import ChatBot from './components/ChatBot';
 import LoadingOverlay from './components/Loading';
@@ -31,6 +31,7 @@ const App = () => {
     }
     return 'light';
   });
+
   const [isLoading, setIsLoading] = useState(false);
   const [currentLang, setCurrentLang] = useState<Language>('en');
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
@@ -46,43 +47,49 @@ const App = () => {
   const [authStep, setAuthStep] = useState<'email' | 'otp' | 'roleSelection' | 'profile'>('email');
   const [authEmail, setAuthEmail] = useState('');
   const [authOtp, setAuthOtp] = useState('');
-  const [profileData, setProfileData] = useState({ name: '', college: '', cgpa: '', class12: '', highestDegree: '', currentDegree: '', fieldOfStudy: '', role: '', organization: '', department: '', designation: '', employeeId: '' });
+  const [profileData, setProfileData] = useState({
+    name: '', college: '', cgpa: '', class12: '', highestDegree: '',
+    currentDegree: '', fieldOfStudy: '', role: '', organization: '',
+    department: '', designation: '', employeeId: ''
+  });
 
-  // Admin Modal State
   const [showAdminModal, setShowAdminModal] = useState(false);
   const [newScholarship, setNewScholarship] = useState<ScholarshipForm>({
-    name: '',
-    provider: '',
-    amount: '',
-    deadline: '',
-    category: '',
-    gpaRequirement: '',
-    degreeLevel: '',
-    description: '',
-    eligibility: [],
-    officialUrl: '',
-    adminId: ''
+    name: '', provider: '', amount: '', deadline: '', category: '',
+    gpaRequirement: '', degreeLevel: '', description: '', eligibility: [],
+    officialUrl: '', adminId: ''
   });
 
   const t = TRANSLATIONS[currentLang];
 
-  // --- Effects ---
+  // --- 1. Initial Session Check (Fixed to use api.ts logic) ---
   useEffect(() => {
-    if (currentUser?.id) {
-      setNewScholarship(prev => ({
-        ...prev,
-        adminId: currentUser.id
-      }));
-    }
-  }, [currentUser]);
+    const initAuth = async () => {
+      setIsLoading(true);
+      try {
+        const userData = await getUserProfile();
+        if (userData) {
+          setCurrentUser(userData);
+          if (userData.appliedScholarships) {
+            setApplications(userData.appliedScholarships);
+          }
+          setView(prev => ['home', 'login'].includes(prev) ?
+            (userData.role === 'admin' ? 'admin' : 'dashboard') : prev);
+        }
+      } catch (err) {
+        console.error("Session sync failed:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    initAuth();
+  }, []);
 
+  // --- 2. Load Scholarships ---
   useEffect(() => {
     const loadData = async () => {
-      // Prevent calling the API with "undefined"
       if (view === 'admin' && !currentUser?.id) return;
-
       try {
-        // If in admin view, pass the ID; otherwise, fetch all
         const adminId = view === 'admin' ? currentUser?.id : undefined;
         const data = await fetchScholarships(adminId);
         setScholarships(data);
@@ -90,94 +97,29 @@ const App = () => {
         console.error("Failed to load scholarships:", err);
       }
     };
-
     loadData();
   }, [view, currentUser]);
 
-  useEffect(() => {
-    const initAuth = async () => {
-      setIsLoading(true);
-
-      try {
-        const response = await fetch('/api/users/profile', {
-          method: 'GET',
-          credentials: 'include',
-        });
-
-        if (response.ok) {
-          const userData = await response.json();
-          setCurrentUser(userData);
-
-          if (userData.appliedScholarships) {
-            setApplications(userData.appliedScholarships);
-          }
-          setView(prev => {
-            if (['home', 'login', 'signup'].includes(prev)) {
-              return userData.role === 'admin' ? 'admin' : 'dashboard';
-            }
-            return prev;
-          });
-
-        } else {
-
-          setCurrentUser(null);
-          setView(prev => {
-            const isPrivateRoute = ['dashboard', 'admin', 'profile'].includes(prev);
-            return isPrivateRoute ? 'home' : prev;
-          });
-        }
-      } catch (err) {
-        console.error("Session sync failed:", err);
-        setCurrentUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initAuth();
-  }, []);
-
+  // --- 3. Theme Effect ---
   useEffect(() => {
     const root = window.document.documentElement;
-    if (theme === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
+    theme === 'dark' ? root.classList.add('dark') : root.classList.remove('dark');
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  // --- Helpers ---
-  const toggleTheme = () => {
-    setTheme(prev => prev === 'light' ? 'dark' : 'light');
-  };
-
-  const handleLoginStart = () => {
-    setAuthStep('email');
-    setAuthEmail('');
-    setAuthOtp('');
-    setShowAuthModal(true);
-  };
+  // --- Handlers ---
+  const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
 
   const handleSendOtp = async () => {
-    if (!authEmail) {
-      alert("Please enter a valid email");
-      return;
-    }
-    setIsLoading(true)
-
+    if (!authEmail) return alert("Please enter a valid email");
+    setIsLoading(true);
     try {
-      const response = await sendOtp(authEmail);
-
-      if (response) {
-        setAuthStep('otp');
-      }
+      await sendOtp(authEmail);
+      setAuthStep('otp');
     } catch (error: any) {
-      console.error("Auth Error:", error);
-      alert(error.response?.data?.message || "Failed to send OTP. Is the server running?");
-    }
-    finally {
-      setIsLoading(false)
+      alert(error.response?.data?.message || "Failed to send OTP.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -185,7 +127,6 @@ const App = () => {
     setIsLoading(true);
     try {
       const response = await verifyOtp(authEmail, authOtp);
-
       if (response.isRegistered) {
         setCurrentUser(response.user);
         setShowAuthModal(false);
@@ -195,39 +136,108 @@ const App = () => {
       }
     } catch (error) {
       alert('Invalid OTP');
-    }
-    finally {
+    } finally {
       setIsLoading(false);
     }
   };
 
+  const handleLogout = async () => {
+    setIsLoading(true);
+    try {
+      await logoutUser();
+      setCurrentUser(null);
+      setView('home');
+      setApplications([]);
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+ const handleApply = async (schId: string) => {
+  if (!currentUser) return handleLoginStart();
+
+  // Improved check: handles both string IDs and populated object IDs
+  const alreadyApplied = (currentUser.appliedScholarships ?? []).some((id: any) => {
+    const compareId = typeof id === 'string' ? id : id._id?.toString();
+    return compareId === schId;
+  });
+
+  if (alreadyApplied) return alert("You have already applied for this scholarship.");
+
+  setIsLoading(true);
+  try {
+    const response = await api.post('/scholarships/apply', { scholarshipId: schId });
+
+    setCurrentUser(prev => prev ? ({
+      ...prev,
+      appliedScholarships: [...(prev.appliedScholarships || []), schId]
+    }) : null);
+
+    if (response.data.application) {
+      setApplications(prev => [...prev, response.data.application]);
+    }
+    alert("Application submitted successfully!");
+  } catch (error: any) {
+    alert(error.response?.data?.message || 'Could not process application.');
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  const handleLoginStart = () => {
+    setAuthStep('email');
+    setAuthEmail('');
+    setAuthOtp('');
+    setShowAuthModal(true);
+  };
+
+  const getLangCodeDisplay = (code: Language) => {
+    const map: Record<Language, string> = { en: 'ENG', hi: 'HIN', bn: 'BEN', ta: 'TAM', or: 'ODI', ml: 'MAL' };
+    return map[code];
+  };
+ const handleBack = () => {
+  if (authStep === 'profile') {
+    setAuthStep('roleSelection');
+  } else if (authStep === 'roleSelection') {
+    setProfileData({ ...profileData, role: '' }); // Reset role choice
+    setAuthStep('otp');
+  } else if (authStep === 'otp') {
+    setAuthStep('email');
+  }
+};
+
   const handleProfileSubmit = async () => {
     setIsLoading(true);
     try {
+      // 1. Create the base payload with common fields
       const newUser: any = {
         email: authEmail,
-        name: profileData.name,
+        name: profileData.name.trim(),
         role: profileData.role,
       };
 
-      // Conditional field mapping
+      // 2. Add Conditional Fields based on Role
       if (profileData.role === 'admin') {
-        newUser.organization = profileData.organization;
-        newUser.department = profileData.department;
-        newUser.designation = profileData.designation;
-        newUser.employeeId = profileData.employeeId;
+        newUser.organization = profileData.organization.trim();
+        newUser.department = profileData.department.trim();
+        newUser.designation = profileData.designation.trim();
+        newUser.employeeId = profileData.employeeId.trim();
       } else {
-        newUser.college = profileData.college;
+        // Student specific fields
+        newUser.college = profileData.college.trim();
         newUser.cgpa = Number(profileData.cgpa);
         newUser.class12Marks = Number(profileData.class12);
         newUser.highestDegree = profileData.highestDegree;
         newUser.currentDegree = profileData.currentDegree;
-        newUser.fieldOfStudy = profileData.fieldOfStudy || 'Engineering';
+        newUser.fieldOfStudy = profileData.fieldOfStudy || 'General';
       }
 
+      // 3. Send to Backend via your Axios registerUser helper
       const userFromDB = await registerUser(newUser);
 
-      // Merge newUser and userFromDB so no fields are "undefined"
+      // 4. Update Local State with the saved user (including the new _id from MongoDB)
       const finalUser = {
         ...newUser,
         ...userFromDB,
@@ -236,150 +246,61 @@ const App = () => {
 
       setCurrentUser(finalUser);
       setShowAuthModal(false);
+
+      // 5. Redirect based on role
       setView(finalUser.role === 'admin' ? 'admin' : 'dashboard');
 
-    } catch (error) {
-      console.error("Registration error:", error);
-      alert('Registration Failed');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleBack = () => {
-    if (authStep === 'profile') {
-      setAuthStep('roleSelection');
-    } else if (authStep === 'roleSelection') {
-      setAuthStep('otp');
-    } else if (authStep === 'otp') {
-      setAuthStep('email');
-    }
-  };
-
-  const handleLogout = async () => {
-    setIsLoading(true)
-    try {
-      await fetch('/api/users/logout', {
-        method: 'POST',
-        credentials: 'include'
-      });
-      setCurrentUser(null);
-      setView('home');
-      setApplications([]);
-
-    } catch (error) {
-      console.error("Logout failed:", error);
-      setCurrentUser(null);
-      setView('home');
-    }
-    finally {
-      setIsLoading(false)
-    }
-  };
-
-  const handleApply = async (schId: string) => {
-    if (!currentUser) {
-      handleLoginStart();
-      return;
-    }
-    const alreadyApplied = (currentUser.appliedScholarships ?? []).includes(schId);
-    if (alreadyApplied) {
-      alert("You have already applied for this scholarship.");
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const response = await fetch('/api/scholarships/apply', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ scholarshipId: schId }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to apply');
-      }
-
-      // 1. Update Current User: Add ID to appliedScholarships array
-      // This ensures the "Applied" badge appears on the Browse page immediately
-      setCurrentUser(prev => {
-        if (!prev) return null;
-        return {
-          ...prev,
-          appliedScholarships: [...(prev.appliedScholarships || []), schId]
-        };
-      });
-
-      // 2. Update Applications State: Use the REAL object from the server
-      // 'data.application' should be the newly created doc from your Mongoose backend
-      if (data.application) {
-        setApplications(prev => [...prev, data.application]);
-      }
-
-      alert("Application submitted successfully!");
-
     } catch (error: any) {
-      console.error("Apply Error:", error);
-      alert(error.message || 'Could not process application.');
+      console.error("Registration error:", error);
+      const errorMessage = error.response?.data?.message || 'Registration Failed. Please check your connection.';
+      alert(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleAddScholarship = async () => {
+const handleAddScholarship = async () => {
+  // 1. Basic Validation
+  if (!newScholarship.name.trim() || !newScholarship.provider.trim()) {
+    alert("Scholarship Name and Provider are required.");
+    return;
+  }
 
+  setIsLoading(true);
+  try {
+    // 2. Prepare Payload with correct types for MongoDB
     const scholarshipPayload = {
+      ...newScholarship,
       name: newScholarship.name.trim(),
       provider: newScholarship.provider.trim(),
-      description: newScholarship.description || 'No description provided.',
-      officialUrl: newScholarship.officialUrl || '',
-      amount: Number(newScholarship.amount) || 0,
-      gpaRequirement: newScholarship.gpaRequirement || 0.0,
-      category: newScholarship.category || 'General',
-      degreeLevel: newScholarship.degreeLevel || 'Undergraduate',
-      deadline: newScholarship.deadline,
-      eligibility: Array.isArray(newScholarship.eligibility)
-        ? newScholarship.eligibility
-        : newScholarship.eligibility ? [newScholarship.eligibility] : ['Standard Criteria'],
-      adminId: currentUser?.id
+      amount: Number(newScholarship.amount) || 0, // Ensure it's a number
+      gpaRequirement: Number(newScholarship.gpaRequirement) || 0,
+      adminId: currentUser?.id || currentUser?._id, // Support both ID formats
+      eligibility: Array.isArray(newScholarship.eligibility) 
+        ? newScholarship.eligibility 
+        : [newScholarship.eligibility]
     };
-    setIsLoading(true);
 
-    try {
-      const savedScholarship = await createScholarship(scholarshipPayload);
-      const scholarshipWithId = {
-        ...savedScholarship,
-        adminId: savedScholarship.adminId?.toString() || currentUser?.id || currentUser?.id
-      };
+    const savedScholarship = await createScholarship(scholarshipPayload);
 
-      setScholarships(prev => [scholarshipWithId, ...prev]);
-      setShowAdminModal(false);
+    // 3. Update State & UI
+    setScholarships((prev) => [savedScholarship, ...prev]);
+    setShowAdminModal(false);
+    
+    // Reset form
+    setNewScholarship({
+      name: '', provider: '', amount: '', deadline: '', category: '',
+      gpaRequirement: '', degreeLevel: '', description: '', eligibility: [],
+      officialUrl: '', adminId: ''
+    });
 
-    } catch (error) {
-      console.error("Failed to add:", error);
-      alert("Could not save scholarship.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getLangCodeDisplay = (code: Language) => {
-    const map: Record<Language, string> = {
-      en: 'ENG',
-      hi: 'HIN',
-      bn: 'BEN',
-      ta: 'TAM',
-      or: 'ODI',
-      ml: 'MAL'
-    };
-    return map[code];
-  };
-
-
+    alert("Scholarship posted successfully!");
+  } catch (error: any) {
+    alert(error.response?.data?.message || "Failed to save scholarship.");
+  } finally {
+    setIsLoading(false);
+  }
+};
   // --- Views logic ---
   const renderContent = () => {
 
@@ -419,10 +340,17 @@ const App = () => {
         />;
 
       case 'admin':
-        if (currentUser && currentUser.role === 'admin') {
-          return <Admin setShowAdminModal={setShowAdminModal} scholarships={scholarships} currentUser={currentUser} />;
-        }
-        return <Home t={t} setView={setView} handleLoginStart={handleLoginStart} currentUser={currentUser} />;
+       if (currentUser && currentUser.role === 'admin') {
+    return (
+      <Admin 
+        setShowAdminModal={setShowAdminModal} 
+        scholarships={scholarships} 
+        currentUser={currentUser} 
+      />
+    );
+  }
+  setView('home'); 
+  return null;
 
       default:
         return <Home t={t} setView={setView} handleLoginStart={handleLoginStart} currentUser={currentUser} />;
@@ -430,7 +358,7 @@ const App = () => {
   };
 
 
-  
+
 
   return (
     <div className="min-h-screen scrollbar-hide flex flex-col font-sans text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
@@ -454,7 +382,20 @@ const App = () => {
                   <button onClick={() => setView('dashboard')} className={`${view === 'dashboard' ? 'text-teal-600 dark:text-teal-400' : 'text-slate-600 dark:text-slate-400'} hover:text-teal-600 dark:hover:text-teal-400 font-medium transition-colors`}>{t.dashboard}</button>
                 )}
                 {/* Secret Admin Link for Demo */}
-                <button onClick={() => !currentUser ? setShowAuthModal(true) : currentUser.role?.trim() === "admin" ? setView('admin') : alert(`Access Denied. Your role is: ${currentUser.role}`)} className="text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 text-xs">Admin</button>
+                <button
+                  onClick={() => {
+                    if (!currentUser) {
+                      setShowAuthModal(true);
+                    } else if (currentUser.role === 'admin') {
+                      setView('admin');
+                    } else {
+                      alert(`Access Denied. Your role is: ${currentUser.role}`);
+                    }
+                  }}
+                  className="text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 text-xs transition-colors"
+                >
+                  Admin Panel
+                </button>
               </div>
 
               {/* Theme Toggle */}
