@@ -15,18 +15,18 @@ const app: Application = express();
 connectDB();
 
 // Middleware
-app.use(cookieParser());
-app.use(express.json()) 
-app.use(express.urlencoded({ extended: true }));
+
 app.use(cors({
-    origin: "https://edugrant-app.vercel.app", 
+    origin:["https://edugrant-app.vercel.app", "https://edugrant-app.vercel.app/"], 
   credentials: true, 
   methods: ["GET", "POST", "PUT", "DELETE"],
   allowedHeaders: ["Content-Type", "Authorization"] 
 }));
-app.options('(.*)', cors());
-app.use(helmet()); 
 
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } })); 
+app.use(cookieParser());
+app.use(express.json()) 
+app.use(express.urlencoded({ extended: true }));
 
 // Test
 app.get('/', (req: Request, res: Response) => {
