@@ -4,7 +4,6 @@ dotenv.config();
 import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import morgan from 'morgan';
 import connectDB from './config/db';
 import cookieParser from 'cookie-parser'; 
 import userRoutes from './routes/userRoutes';
@@ -24,7 +23,7 @@ app.use(cors({
     credentials: true 
 }));
 app.use(helmet()); 
-app.use(morgan('dev')); 
+
 
 // Test
 app.get('/', (req: Request, res: Response) => {

@@ -9,7 +9,7 @@ interface IOtp extends Document {
 const OtpSchema = new Schema<IOtp>({
   email: { type: String, required: true },
   otp: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now, expires: 300 } // Auto-delete after 5 mins
+  createdAt: { type: Date, default: Date.now, expires: 300 } 
 });
 
 export default mongoose.model<IOtp>('Otp', OtpSchema);

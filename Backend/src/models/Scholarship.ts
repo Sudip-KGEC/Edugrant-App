@@ -10,6 +10,8 @@ export interface IScholarship extends Document {
   degreeLevel: string;
   description: string;
   eligibility: string[];
+  officialUrl?: string;
+  adminId: mongoose.Types.ObjectId;
 }
 
 const ScholarshipSchema: Schema = new Schema({
@@ -22,6 +24,8 @@ const ScholarshipSchema: Schema = new Schema({
   degreeLevel: { type: String, required: true },
   description: { type: String, required: true },
   eligibility: [{ type: String }],
+  officialUrl: { type: String },
+  adminId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true }
 }, {
   timestamps: true 
 });

@@ -130,7 +130,21 @@ export const register = async (req: Request, res: Response) => {
       success: true,
       user: {
         _id: savedUser._id,
+        name: savedUser.name,
         email: savedUser.email,
+        college: savedUser.college,
+        cgpa: savedUser.cgpa,
+        class12Marks: savedUser.class12Marks,
+        highestDegree: savedUser.highestDegree,
+        currentDegree: savedUser.currentDegree,
+        role: savedUser.role,
+        fieldOfStudy: savedUser.fieldOfStudy,
+        organization: savedUser.organization,
+        department: savedUser.department,
+        designation: savedUser.designation,
+        employeeId: savedUser.employeeId,
+        appliedScholarships: savedUser.appliedScholarships
+        
       },
       token
     });
@@ -154,6 +168,7 @@ export const getProfile = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Server error" });
   }
 };
+
 export const logout = (req: Request, res: Response) => {
   res.cookie('token', '', { expires: new Date(0), httpOnly: true });
   res.status(200).json({ message: "Logged out" });
