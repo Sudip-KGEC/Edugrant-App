@@ -1,12 +1,27 @@
 import axios from 'axios';
 
 // Ensure this matches your Render URL in Vercel settings
-const BASE_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000/api";
+const BASE_URL = "https://edugrant-backend.onrender.com";
 
 export const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true, // Required if your backend uses cookies or sessions
 });
+
+api.interceptors.response.use(
+  (response) => {
+    if (Array.isArray(response.data)) {
+      response.data = response.data.map(item => ({
+        ...item,
+        id: item._id || item.id
+      }));
+    } else if (response.data && typeof response.data === 'object') {
+      response.data.id = response.data._id || response.data.id;
+    }
+    return response;
+  },
+  (error) => Promise.reject(error)
+);
 
 // --- AUTH FUNCTIONS ---
 
