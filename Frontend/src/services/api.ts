@@ -7,6 +7,21 @@ export const api = axios.create({
   withCredentials: true, // Required if your backend uses cookies or sessions
 });
 
+api.interceptors.response.use(
+  (response) => {
+    if (Array.isArray(response.data)) {
+      response.data = response.data.map(item => ({
+        ...item,
+        id: item._id || item.id
+      }));
+    } else if (response.data && typeof response.data === 'object') {
+      response.data.id = response.data._id || response.data.id;
+    }
+    return response;
+  },
+  (error) => Promise.reject(error)
+);
+
 // --- AUTH FUNCTIONS ---
 
 export const sendOtp = async (email: string) => {
