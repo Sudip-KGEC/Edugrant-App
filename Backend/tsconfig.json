@@ -2,11 +2,14 @@
   "compilerOptions": {
     "target": "es2018",
     "module": "commonjs", 
-    "rootDir": "./src",
+    "rootDir": "./",          
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "lib": ["ESNext", "DOM"]
-  }
+    "lib": ["ESNext", "DOM"],
+    "moduleResolution": "node" 
+  },
+  "include": ["api/**/*.ts", "src/**/*.ts"], 
+  "exclude": ["node_modules"]
 }
