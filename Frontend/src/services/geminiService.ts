@@ -4,10 +4,6 @@ import { GeminiHistoryItem } from '../../types';
 
 
 const API_URL = `${import.meta.env.VITE_BACKEND_URL}/api/chat`;
-<<<<<<< HEAD
-
-=======
->>>>>>> 9098a4a47adc0fa1d89c2b2b482db2a2ae66b407
 
 export const sendMessageToGemini = async (message: string, history: GeminiHistoryItem[]) => {
   try {
