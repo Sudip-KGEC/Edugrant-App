@@ -275,7 +275,7 @@ const handleAddScholarship = async () => {
       provider: newScholarship.provider.trim(),
       amount: Number(newScholarship.amount) || 0, // Ensure it's a number
       gpaRequirement: Number(newScholarship.gpaRequirement) || 0,
-      adminId: currentUser?.id || currentUser?._id, // Support both ID formats
+      adminId: currentUser?.id || currentUser?.id, // Support both ID formats
       eligibility: Array.isArray(newScholarship.eligibility) 
         ? newScholarship.eligibility 
         : [newScholarship.eligibility]
@@ -478,7 +478,7 @@ const handleAddScholarship = async () => {
       </nav>
 
       {/* Main Content */}
-      <main className="flex-grow">
+      <main className="grow">
         {renderContent()}
       </main>
 
@@ -830,7 +830,7 @@ const handleAddScholarship = async () => {
 
                   <div className="p-6 border-t border-slate-200 dark:border-slate-800 flex gap-4">
                     <button onClick={() => setShowAdminModal(false)} className="flex-1 py-2 rounded-lg text-slate-500">Cancel</button>
-                    <button onClick={handleAddScholarship} className="flex-[2] bg-teal-600 text-white py-2 rounded-lg font-bold hover:bg-teal-700">Save</button>
+                    <button onClick={handleAddScholarship} className="flex-2 bg-teal-600 text-white py-2 rounded-lg font-bold hover:bg-teal-700">Save</button>
                   </div>
                 </div>
               </div>

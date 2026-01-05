@@ -3,7 +3,8 @@ import axios from 'axios';
 import { GeminiHistoryItem } from '../../types';
 
 
-const API_URL = 'http://localhost:5000/api/chat'; 
+const API_URL = `${import.meta.env.VITE_BACKEND_URL}/api/chat`;
+
 
 export const sendMessageToGemini = async (message: string, history: GeminiHistoryItem[]) => {
   try {
@@ -13,7 +14,9 @@ export const sendMessageToGemini = async (message: string, history: GeminiHistor
     });
     
     return response.data.text;
+    
   } catch (error) {
+    console.error("API URL being called:", API_URL);
     console.error("Error communicating with Ai Edugrant Assistant:", error);
     throw new Error("Failed to get response");
   }

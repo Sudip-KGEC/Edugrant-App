@@ -37,6 +37,12 @@ export const chatWithAI = async (req: Request, res: Response): Promise<void> => 
 
   } catch (error: any) {
     console.error("AI Controller Error:", error);
-    res.status(500).json({ error: "I'm having trouble thinking right now. Please try again." });
+    if (error.status === 429) {
+          res.status(429).json({ 
+                error: "Rate limit exceeded. Please wait a moment before trying again." 
+            });
+        }
+      res.status(500).json({ error: "Internal Server Error" });
+    
   }
 };

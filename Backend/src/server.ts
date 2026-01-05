@@ -15,16 +15,17 @@ const app: Application = express();
 connectDB();
 
 // Middleware
+
+app.use(cors({
+  origin: process.env.FRONTEND_URL,
+  credentials: true, 
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], 
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With", "Accept"]
+}));
+
 app.use(cookieParser());
 app.use(express.json()) 
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({
-  origin: "https://edugrant-app.vercel.app", 
-  credentials: true, 
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
-
 app.use(helmet()); 
 
 
@@ -35,7 +36,7 @@ app.get('/', (req: Request, res: Response) => {
 
 //Routes 
 app.use('/api/users', userRoutes);
-app.use('/api', chatRoutes);
+app.use('/api/chat', chatRoutes);
 app.use('/api/scholarships', scholarshipRoutes);
 
 // Start Server
