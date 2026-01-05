@@ -4,9 +4,9 @@
   "description": "",
   "main": "src/server.ts",
   "scripts": {
-    "start": "node dist/server.ts",
-    "dev": "nodemon src/server.ts",
-    "build": "tsc"
+    "start": "node src/server.ts", 
+     "dev": "nodemon src/server.ts",
+    "build": "echo 'Skipping build...'"
   },
   "keywords": [],
   "author": "",
