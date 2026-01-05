@@ -1,11 +1,19 @@
 import axios from 'axios';
 
+<<<<<<< HEAD
 // Ensure this matches your Render URL in Vercel settings
 const BASE_URL = import.meta.env.VITE_BACKEND_URL
 
 export const api = axios.create({
   baseURL: BASE_URL,
   withCredentials: true, 
+=======
+const RAW_BASE_URL = import.meta.env.VITE_BACKEND_URL || "https://edugrant-backend.onrender.com";
+
+export const api = axios.create({
+  baseURL: RAW_BASE_URL,
+  withCredentials: true,
+>>>>>>> 9098a4a47adc0fa1d89c2b2b482db2a2ae66b407
 });
 
 api.interceptors.response.use(
@@ -23,7 +31,11 @@ api.interceptors.response.use(
   (error) => Promise.reject(error)
 );
 
+<<<<<<< HEAD
 // --- AUTH FUNCTIONS ---
+=======
+
+>>>>>>> 9098a4a47adc0fa1d89c2b2b482db2a2ae66b407
 
 export const sendOtp = async (email: string) => {
   return await api.post('/api/users/send-otp', { email });
@@ -52,7 +64,7 @@ export const getUserProfile = async () => {
   }
 };
 
-// --- SCHOLARSHIP FUNCTIONS ---
+// --- SCHOLARSHIP FUNCTIONS
 
 export const fetchScholarships = async (adminId?: string) => {
   const response = await api.get('/api/scholarships', {
@@ -69,7 +81,6 @@ export const createScholarship = async (scholarshipData: any) => {
   };
 };
 
-// FIXED: Now using the 'api' instance instead of raw fetch
 export const applyForScholarship = async (scholarshipId: string, userEmail: string) => {
   const response = await api.post('/api/scholarships/apply', { scholarshipId, userEmail });
   return response.data;
