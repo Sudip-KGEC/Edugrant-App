@@ -18,7 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 
 import { TRANSLATIONS } from './constants';
-import { ScholarshipForm, Application, User, Language } from '../types';
+import {Application, User, Language } from './types';
 import { api, fetchScholarships, getUserProfile, registerUser, verifyOtp, createScholarship, sendOtp, logoutUser } from './services/api';
 
 import ChatBot from './components/ChatBot';
@@ -33,28 +33,37 @@ import AuthModal from './components/AuthModal';
 
 const App = () => {
 
+  // Global App State
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('theme') === 'dark' ? 'dark' : 'light';
     }
     return 'light';
   });
+  const [view, setView] = useState<'home' | 'browse' | 'dashboard' | 'admin'>('home');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [scholarships, setScholarships] = useState([]);
+
+  // // UI State
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentLang, setCurrentLang] = useState<Language>('en');
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
-  const [view, setView] = useState<'home' | 'browse' | 'dashboard' | 'admin'>('home');
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [scholarships, setScholarships] = useState([]);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const t = TRANSLATIONS[currentLang];
+
+
+  // Browse State
   const [applications, setApplications] = useState<Application[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   // Auth Modal State
-  const [showAuthModal, setShowAuthModal] = useState(false);
   const [authStep, setAuthStep] = useState<'email' | 'otp' | 'roleSelection' | 'profile'>('email');
   const [authEmail, setAuthEmail] = useState('');
   const [authOtp, setAuthOtp] = useState('');
+  
   const [profileData, setProfileData] = useState({
     name: '', college: '', cgpa: '', class12: '', highestDegree: '',
     currentDegree: '', fieldOfStudy: '', role: '', organization: '',
@@ -62,15 +71,11 @@ const App = () => {
   });
 
   const [showAdminModal, setShowAdminModal] = useState(false);
-  const [newScholarship, setNewScholarship] = useState<ScholarshipForm>({
-    name: '', provider: '', amount: '', deadline: '', category: '',
-    gpaRequirement: '', degreeLevel: '', description: '', eligibility: [],
-    officialUrl: '', adminId: ''
-  });
 
-  const t = TRANSLATIONS[currentLang];
 
-  // --- 1. Initial Session Check (Fixed to use api.ts logic) ---
+
+
+  // --- Auth Sync ---
   useEffect(() => {
     const initAuth = async () => {
       setIsLoading(true);
@@ -93,7 +98,7 @@ const App = () => {
     initAuth();
   }, []);
 
-  // --- 2. Load Scholarships ---
+  // ---Load Scholarships ---
   useEffect(() => {
     const loadData = async () => {
       if (view === 'admin' && !currentUser?.id) return;
@@ -108,7 +113,7 @@ const App = () => {
     loadData();
   }, [view, currentUser]);
 
-  // --- 3. Theme Effect ---
+  // --Theme Effect ---
   useEffect(() => {
     const root = window.document.documentElement;
     theme === 'dark' ? root.classList.add('dark') : root.classList.remove('dark');
@@ -117,6 +122,8 @@ const App = () => {
 
   // --- Handlers ---
   const toggleTheme = () => setTheme(prev => prev === 'light' ? 'dark' : 'light');
+
+
 
   const handleSendOtp = async () => {
     if (!authEmail) return alert("Please enter a valid email");
@@ -148,25 +155,17 @@ const App = () => {
       setIsLoading(false);
     }
   };
-
-  const handleLogout = async () => {
-    setIsLoading(true);
-    try {
-      await logoutUser();
-      setCurrentUser(null);
-      setView('home');
-      setApplications([]);
-    } catch (error) {
-      console.error("Logout failed:", error);
-    } finally {
-      setIsLoading(false);
-    }
+  
+ const handleLoginStart = () => {
+    setAuthStep('email');
+    setAuthEmail('');
+    setAuthOtp('');
+    setShowAuthModal(true);
   };
 
   const handleApply = async (schId: string) => {
     if (!currentUser) return handleLoginStart();
 
-    // Improved check: handles both string IDs and populated object IDs
     const alreadyApplied = (currentUser.appliedScholarships ?? []).some((id: any) => {
       const compareId = typeof id === 'string' ? id : id._id?.toString();
       return compareId === schId;
@@ -194,12 +193,7 @@ const App = () => {
     }
   };
 
-  const handleLoginStart = () => {
-    setAuthStep('email');
-    setAuthEmail('');
-    setAuthOtp('');
-    setShowAuthModal(true);
-  };
+ 
 
   const getLangCodeDisplay = (code: Language) => {
     const map: Record<Language, string> = { en: 'ENG', hi: 'HIN', bn: 'BEN', ta: 'TAM', or: 'ODI', ml: 'MAL' };
@@ -268,47 +262,21 @@ const App = () => {
     }
   };
 
-  const handleAddScholarship = async () => {
-    // 1. Basic Validation
-    if (!newScholarship.name.trim() || !newScholarship.provider.trim()) {
-      alert("Scholarship Name and Provider are required.");
-      return;
-    }
-
+  
+  const handleLogout = async () => {
     setIsLoading(true);
     try {
-      // 2. Prepare Payload with correct types for MongoDB
-      const scholarshipPayload = {
-        ...newScholarship,
-        name: newScholarship.name.trim(),
-        provider: newScholarship.provider.trim(),
-        amount: Number(newScholarship.amount) || 0, // Ensure it's a number
-        gpaRequirement: Number(newScholarship.gpaRequirement) || 0,
-        adminId: currentUser?.id || currentUser?.id, // Support both ID formats
-        eligibility: Array.isArray(newScholarship.eligibility)
-          ? newScholarship.eligibility
-          : [newScholarship.eligibility]
-      };
-
-      const savedScholarship = await createScholarship(scholarshipPayload);
-
-      // 3. Update State & UI
-      setScholarships((prev) => [savedScholarship, ...prev]);
-      setShowAdminModal(false);
-
-      // Reset form
-      setNewScholarship({
-        name: '', provider: '', amount: '', deadline: '', category: '',
-        gpaRequirement: '', degreeLevel: '', description: '', eligibility: [],
-        officialUrl: '', adminId: ''
-      });
-
-    } catch (error: any) {
-      alert(error.response?.data?.message || "Failed to save scholarship.");
+      await logoutUser();
+      setCurrentUser(null);
+      setView('home');
+      setApplications([]);
+    } catch (error) {
+      console.error("Logout failed:", error);
     } finally {
       setIsLoading(false);
     }
   };
+
   // --- Views logic ---
   const renderContent = () => {
 
@@ -593,6 +561,7 @@ const App = () => {
           handleSendOtp={handleSendOtp}
           handleVerifyOtp={handleVerifyOtp}
           handleBack={handleBack}
+
           setShowAuthModal={setShowAuthModal}
           t={t}
           setProfileData={setProfileData}
@@ -603,7 +572,7 @@ const App = () => {
 
       {/* Admin Add Modal */}
       {showAdminModal && (
-        <AddScholarshipModal newScholarship={newScholarship} setNewScholarship={setNewScholarship} handleAddScholarship={handleAddScholarship} setShowAdminModal={setShowAdminModal} />
+        <AddScholarshipModal setIsLoading={setIsLoading} currentUser={currentUser} setScholarships={setScholarships} setShowAdminModal={setShowAdminModal} />
       )}
 
       <ChatBot />

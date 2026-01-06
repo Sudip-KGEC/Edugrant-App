@@ -1,6 +1,6 @@
 
 import axios from 'axios';
-import { GeminiHistoryItem } from '../../types';
+import { GeminiHistoryItem } from '../types';
 
 
 const API_URL = `${import.meta.env.VITE_BACKEND_URL}/api/chat`;

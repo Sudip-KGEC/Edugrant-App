@@ -1,8 +1,22 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
+interface PopulatedUser {
+  _id: string;
+  name: string;
+  college: string;
+  cgpa: number;
+  class12Marks: number;
+  currentDegree: string;
+}
+
+interface PopulatedScholarship {
+  _id: string;
+  name: string;
+}
+
 export interface IApplication extends Document {
-  scholarshipId: mongoose.Types.ObjectId;
-  studentId: mongoose.Types.ObjectId;
+  scholarshipId: mongoose.Types.ObjectId | PopulatedScholarship;
+  studentId: mongoose.Types.ObjectId | PopulatedUser;
   adminId: mongoose.Types.ObjectId; 
   status: 'Applied' | 'Under Review' | 'Accepted' | 'Rejected';
   appliedAt: Date;
@@ -10,7 +24,7 @@ export interface IApplication extends Document {
 
 const ApplicationSchema: Schema = new Schema({
   scholarshipId: { type: Schema.Types.ObjectId, ref: 'Scholarship', required: true },
-  studentId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  studentId: { type: Schema.Types.ObjectId, ref: 'User', required: true }, 
   adminId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
   status: { 
     type: String, 

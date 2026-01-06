@@ -74,6 +74,12 @@ export const applyForScholarship = async (scholarshipId: string, userEmail: stri
   return response.data;
 };
 
+export const getStudentApplications = async () => {
+  const response = await api.get('/api/scholarships/my-applications');
+  return response.data;
+};
+
+
 api.defaults.withCredentials = true;
 
 export default api;

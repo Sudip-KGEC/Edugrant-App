@@ -1,115 +1,148 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Clock} from 'lucide-react';
-import axios from 'axios';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { Search, Clock, RefreshCw } from 'lucide-react';
 import AdminDashboard from './AdminDashboard';
-import { Application, ApplicationStatus, ScholarshipForm } from '../../types';
+import { Application, ApplicationStatus, ScholarshipForm } from '../types';
 import ProfileHeader from './ProfileHeader';
+import { getAdminScholarships, getAdminApplications, updateApplicationStatus } from '../services/adminApi';
+import { getStudentApplications } from '../services/api';
 
 const Dashboard = ({ t, currentUser, scholarships, setView }) => {
+  // Admin State
   const [allApplications, setAllApplications] = useState<Application[]>([]);
   const [allScholarships, setAllScholarships] = useState<ScholarshipForm[]>([]);
+  
+  // Student State
+  const [myApplications, setMyApplications] = useState<any[]>([]);
+  
+  // UI State
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  useEffect(() => {
-    const fetchAdminData = async () => {
-      if (!currentUser || currentUser?.role !== 'admin') {
-        setIsLoading(false);
-        return;
-      }
+  // --- DATA FETCHING ---
 
-      try {
-        const token = localStorage.getItem('token');
-        const config = { headers: { Authorization: `Bearer ${token}` } };
+  const fetchAdminData = useCallback(async () => {
+    try {
+      const [scholRes, appRes] = await Promise.all([
+        getAdminScholarships(currentUser.id || currentUser._id),
+        getAdminApplications()
+      ]);
 
-        // Fetch both datasets simultaneously for better performance
-        const [scholRes, appRes] = await Promise.all([
-          axios.get(`/api/scholarships?adminId=${currentUser.id || currentUser._id}`, config),
-          axios.get('/api/scholarships/admin/applications', config)
-        ]);
+      // Process Admin Data
+      const cleanedApps = appRes.map((app: any) => ({
+        ...app,
+        studentName: app.studentId?.name || 'Unknown',
+        displayUID: (app.studentId?._id || "").toString().slice(-6).toUpperCase(),
+        scholarshipName: app.scholarshipId?.name || 'Deleted Scholarship',
+        rawScholarshipId: app.scholarshipId?._id || app.scholarshipId,
+        status: app.status,
+      }));
 
+      const scholWithCounts = scholRes.map((schol: any) => ({
+        ...schol,
+        applicantCount: cleanedApps.filter((a: any) => a.rawScholarshipId === (schol._id || schol.id)).length || 0
+      }));
 
-        //  Clean and map application data
-        const cleanedApplications = appRes.data?.map((app: any) => ({
-          ...app,
-          id: app._id || app.id,
-          studentName: app.studentId?.name || 'Unknown Student',
-          displayUID: (app.studentId?._id || "").toString().slice(-6).toUpperCase(),
-          scholarshipName: app.scholarshipId?.name || 'Scholarship Deleted',
-          rawScholarshipId: app.scholarshipId?._id || app.scholarshipId,
-          status: app.status as ApplicationStatus,
-          college: app.studentId?.college || 'N/A',
-          cgpa: app.studentId?.cgpa || '0.0',
-          class12Marks: app.studentId?.class12Marks || '0'
-        }));
-
-        const scholarshipsWithCounts = scholRes.data.map((schol: any) => {
-          const sId = schol._id || schol.id;
-          const count = cleanedApplications.filter(a => a.rawScholarshipId === sId).length;
-          return {
-            ...schol,
-            applicantCount: count || 0
-          };
-        });
-
-        // Update state
-        setAllScholarships(scholarshipsWithCounts);
-        setAllApplications(cleanedApplications);
-
-      } catch (error) {
-        console.error("Critical Dashboard Error:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchAdminData();
+      setAllScholarships(scholWithCounts);
+      setAllApplications(cleanedApps);
+    } catch (error) {
+      console.error("Admin Fetch Error:", error);
+    }
   }, [currentUser]);
 
+  const fetchStudentData = useCallback(async () => {
+    try {
+      const apps = await getStudentApplications();
+      console.log("FROM API (Student Apps):", apps);
+      setMyApplications(apps);
+    } catch (error) {
+      console.error("Student Fetch Error:", error);
+    }
+  }, []);
 
-  if (!currentUser) {
-    return <div className="text-center mt-20 text-slate-500 dark:text-slate-400">{t.applyPrompt}</div>;
-  }
+  // --- EFFECT: INITIAL LOAD & POLLING ---
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    const loadInitialData = async () => {
+      setIsLoading(true);
+      if (currentUser.role === 'admin') {
+        await fetchAdminData();
+      } else {
+        await fetchStudentData();
+      }
+      setIsLoading(false);
+    };
+
+    loadInitialData();
+
+    // AUTOMATIC POLLING: 
+    let intervalId: NodeJS.Timeout;
+
+    if (currentUser.role !== 'admin') {
+      intervalId = setInterval(() => {
+        setIsRefreshing(true);
+        fetchStudentData().finally(() => setIsRefreshing(false));
+      }, 10000); 
+    }
+
+    return () => clearInterval(intervalId);
+  }, [currentUser, fetchAdminData, fetchStudentData]);
+
+
+  // --- ADMIN ACTIONS ---
 
   const handleUpdateStatus = async (applicationId: string, newStatus: ApplicationStatus) => {
-  
-    const previousApplications = [...allApplications];
-
-    setAllApplications(prev =>
-      prev.map(app => (app.id === applicationId || (app as any)._id === applicationId) ? { ...app, status: newStatus } : app)
-    );
+    const previous = [...allApplications];
+   
+    setAllApplications(prev => prev.map(app => 
+      app.id === applicationId ? { ...app, status: newStatus } : app
+    ));
 
     try {
-      const token = localStorage.getItem('token');
-      await axios.patch('/api/scholarships/admin/update-status',
-        { applicationId, status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-    } catch (error) {
-      alert("Failed to update status on server. Reverting...");
-      setAllApplications(previousApplications);
+      await updateApplicationStatus(applicationId, newStatus);
+    } catch (error: any) {
+      alert("Update failed. Reverting...");
+      setAllApplications(previous);
     }
   };
 
-  const userApplications = (currentUser.appliedScholarships || []).map(id => {
-    const details = scholarships.find(s => (s._id === id || s.id === id));
-    return {
-      id: id,
-      scholarshipName: details?.name || 'Unknown Scholarship',
-      provider: details?.provider || 'Details pending...',
-      status: 'Applied' as ApplicationStatus
-    };
-  });
+  // --- MEMOIZED STUDENT DATA (The Fix) ---
 
+  const userApplications = useMemo(() => {
+    if (!myApplications || myApplications.length === 0) return [];
+    
+    return myApplications.map(app => {
+      // Handle both _id and id, and ensure strings
+      const appIdString = app.scholarshipId?._id 
+        ? app.scholarshipId._id.toString() 
+        : app.scholarshipId?.toString();
+
+      // Find details from the 'scholarships' prop passed to Dashboard
+      const details = scholarships?.find((s: any) => {
+        const sId = s._id || s.id;
+        return sId?.toString() === appIdString;
+      });
+
+      return {
+        id: app.id || app._id,
+        scholarshipName: details?.name || app.scholarshipId?.name || 'Loading Name...',
+        provider: details?.provider || 'Organization',
+        status: app.status || 'Applied',
+        
+      };
+    });
+  }, [myApplications, scholarships]);
+
+
+  if (!currentUser) return <div className="text-center mt-20">{t.applyPrompt}</div>;
   if (isLoading) return <div className="text-center py-20">Loading Dashboard...</div>;
-
-
-
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 scrollbar-hide">
       <ProfileHeader user={currentUser} />
 
-      {/* Content Logic */}
+      {/* ADMIN VIEW */}
       {currentUser.role === 'admin' ? (
         <AdminDashboard
           myScholarships={allScholarships}
@@ -117,17 +150,23 @@ const Dashboard = ({ t, currentUser, scholarships, setView }) => {
           updateStatus={handleUpdateStatus}
         />
       ) : (
+        
+        /* STUDENT VIEW */
         <>
-          <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
-            <Clock className="text-teal-500" /> {t.dashboard}
-          </h3>
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
+              <Clock className="text-teal-500" /> {t.dashboard}
+            </h3>
+            {isRefreshing && <span className="text-xs text-slate-400 flex items-center gap-1"><RefreshCw size={12} className="animate-spin"/> Syncing...</span>}
+          </div>
+
           {userApplications.length === 0 ? (
             <div className="text-center py-16 bg-white dark:bg-slate-900 rounded-2xl border-2 border-dashed border-slate-200 dark:border-slate-800">
               <Search className="mx-auto text-slate-400 mb-4" size={40} />
-              <p className="text-slate-500 dark:text-slate-400 mb-4 text-lg">No active applications found.</p>
+              <p className="text-slate-500 dark:text-slate-400 mb-4">No active applications found.</p>
               <button
                 onClick={() => setView('browse')}
-                className="bg-teal-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-teal-700 transition-all shadow-md hover:shadow-teal-500/20"
+                className="bg-teal-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-teal-700 transition-all"
               >
                 Browse Scholarships
               </button>
@@ -148,8 +187,19 @@ const Dashboard = ({ t, currentUser, scholarships, setView }) => {
                         <div className="font-semibold text-slate-800 dark:text-slate-200">{app.scholarshipName}</div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">{app.provider}</div>
                       </td>
+                      
+                      {/* Dynamic Status Badge */}
                       <td className="py-4 px-6">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400 border border-blue-100 dark:border-blue-800">
+                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-colors duration-500 ${
+                          app.status === 'Approved' 
+                            ? 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400' 
+                            : app.status === 'Rejected'
+                            ? 'bg-rose-50 text-rose-600 border-rose-100 dark:bg-rose-900/20 dark:text-rose-400'
+                            : 'bg-sky-50 text-sky-600 border-sky-100 dark:bg-sky-900/20 dark:text-sky-400'
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${
+                            app.status === 'Approved' ? 'bg-emerald-500' : app.status === 'Rejected' ? 'bg-rose-500' : 'bg-sky-500'
+                          }`} />
                           {app.status}
                         </span>
                       </td>

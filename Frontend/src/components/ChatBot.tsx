@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { MessageCircle, X, Send, Bot, User, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { sendMessageToGemini } from '../services/geminiService'; 
-import { ChatMessage, GeminiHistoryItem } from '../../types';
+import { ChatMessage, GeminiHistoryItem } from '../types';
 
 const ChatBot: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);

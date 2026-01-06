@@ -99,17 +99,17 @@ const AdminDashboard = ({ myScholarships = [], studentApplications = [], updateS
                           {/* Education & Academic Merit */}
                           <div className="text-slate-700 dark:text-slate-300">
                             <span className="text-teal-500 font-bold text-[10px] uppercase block">College</span>
-                            {app.college || 'N/A'}
+                            {app.studentId?.college || 'N/A'}
                           </div>
 
                           <div className="flex gap-3 mt-2">
                             <div>
                               <span className="block text-[10px] text-slate-400 uppercase font-bold">CGPA</span>
-                              <span className="font-bold text-slate-700 dark:text-slate-200">{app.cgpa || '0.0'}</span>
+                              <span className="font-bold text-slate-700 dark:text-slate-200">{app.studentId?.cgpa || '0.0'}</span>
                             </div>
                             <div>
                               <span className="block text-[10px] text-slate-400 uppercase font-bold">12th %</span>
-                              <span className="font-bold text-slate-700 dark:text-slate-200">{app.class12Marks || '0'}%</span>
+                              <span className="font-bold text-slate-700 dark:text-slate-200">{app.studentId?.class12Marks || '0'}%</span>
                             </div>
                           </div>
                         </td>
