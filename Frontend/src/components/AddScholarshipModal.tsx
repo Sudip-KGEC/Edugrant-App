@@ -2,99 +2,157 @@ import React from 'react'
 
 const AddScholarshipModal = ({ newScholarship, setNewScholarship, handleAddScholarship, setShowAdminModal }) => {
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-xl p-6 w-full max-w-lg border border-slate-200 dark:border-slate-800 transition-colors">
-        <h3 className="text-xl font-bold mb-4 text-slate-800 dark:text-white">Add New Scholarship</h3>
-        <div className="space-y-6 max-w-2xl mx-auto p-8">
-          <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] border border-slate-200 dark:border-slate-800">
+        
+        <div className="p-6 border-b border-slate-200 dark:border-slate-800">
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Add New Scholarship</h2>
+        </div>
 
-              <div className="p-6 border-b border-slate-200 dark:border-slate-800">
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Add New Scholarship</h2>
-              </div>
+        {/* Scrollable Body */}
+        <div className="p-6 overflow-y-auto space-y-4 scrollbar-hide" style={{ maxHeight: '70vh' }}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-              {/* Scrollable Body */}
-              <div className="p-6 overflow-y-auto space-y-4 custom-scrollbar scrollbar-hide">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Name */}
+            <div className="md:col-span-1">
+              <label htmlFor="name" className="text-sm font-semibold text-slate-600 dark:text-slate-400">Name</label>
+              <input 
+                id="name"
+                name="name"
+                className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg text-slate-800 dark:text-white"
+                onChange={e => setNewScholarship({ ...newScholarship, name: e.target.value })} 
+              />
+            </div>
 
-                  {/* Name & Provider */}
-                  <div className="md:col-span-1">
-                    <label className="text-sm font-semibold text-slate-600">Name</label>
-                    <input className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg"
-                      onChange={e => setNewScholarship({ ...newScholarship, name: e.target.value })} />
-                  </div>
-                  <div className="md:col-span-1">
-                    <label className="text-sm font-semibold text-slate-600">Provider</label>
-                    <input className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg"
-                      onChange={e => setNewScholarship({ ...newScholarship, provider: e.target.value })} />
-                  </div>
+            {/* Provider */}
+            <div className="md:col-span-1">
+              <label htmlFor="provider" className="text-sm font-semibold text-slate-600 dark:text-slate-400">Provider</label>
+              <input 
+                id="provider"
+                name="provider"
+                className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg text-slate-800 dark:text-white"
+                onChange={e => setNewScholarship({ ...newScholarship, provider: e.target.value })} 
+              />
+            </div>
 
-                  {/* Amount & Deadline */}
-                  <div>
-                    <label className="text-sm font-semibold text-slate-600">Amount (INR)</label>
-                    <input type="number" className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg"
-                      onChange={e => setNewScholarship({ ...newScholarship, amount: Number(e.target.value) })} />
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold text-slate-600">Deadline</label>
-                    <input type="date" className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg"
-                      onChange={e => setNewScholarship({ ...newScholarship, deadline: e.target.value })} />
-                  </div>
+            {/* Amount */}
+            <div>
+              <label htmlFor="amount" className="text-sm font-semibold text-slate-600 dark:text-slate-400">Amount (INR)</label>
+              <input 
+                id="amount"
+                name="amount"
+                type="number" 
+                className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg text-slate-800 dark:text-white"
+                onChange={e => setNewScholarship({ ...newScholarship, amount: Number(e.target.value) })} 
+              />
+            </div>
 
-                  {/* Degree Level & Category */}
-                  <div>
-                    <label className="text-sm font-semibold text-slate-600">Degree Level</label>
-                    <select className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 rounded-lg"
-                      onChange={e => setNewScholarship({ ...newScholarship, degreeLevel: e.target.value })}>
-                      <option value="">Select Level</option>
-                      <option value="Undergraduate">Undergraduate</option>
-                      <option value="Postgraduate">Postgraduate</option>
-                      <option value="PhD">PhD</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold text-slate-600">Category</label>
-                    <input className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg"
-                      placeholder="e.g. Merit" onChange={e => setNewScholarship({ ...newScholarship, category: e.target.value })} />
-                  </div>
-                  {/* LINK */}
-                  <div className="md:col-span-2">
-                    <label className="text-sm font-semibold text-slate-600">Official Website URL</label>
-                    <input
-                      type="url"
-                      className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg"
-                      placeholder="https://example.com/scholarship"
-                      onChange={e => setNewScholarship({ ...newScholarship, officialUrl: e.target.value })} />
-                  </div>
+            {/* Deadline */}
+            <div>
+              <label htmlFor="deadline" className="text-sm font-semibold text-slate-600 dark:text-slate-400">Deadline</label>
+              <input 
+                id="deadline"
+                name="deadline"
+                type="date" 
+                className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg text-slate-800 dark:text-white"
+                onChange={e => setNewScholarship({ ...newScholarship, deadline: e.target.value })} 
+              />
+            </div>
 
-                  {/* GPA & Eligibility (Array Input) */}
-                  <div>
-                    <label className="text-sm font-semibold text-slate-600">Min GPA</label>
-                    <input type="number" step="0.1" className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg"
-                      onChange={e => setNewScholarship({ ...newScholarship, gpaRequirement: Number(e.target.value) })} />
-                  </div>
-                  <div>
-                    <label className="text-sm font-semibold text-slate-600">Eligibility (comma separated)</label>
-                    <input className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg"
-                      placeholder="Income < 2L, Indian Citizen"
-                      onChange={e => setNewScholarship({ ...newScholarship, eligibility: e.target.value.split(',').map(item => item.trim()) })} />
-                  </div>
+            {/* Degree Level */}
+            <div>
+              <label htmlFor="degreeLevel" className="text-sm font-semibold text-slate-600 dark:text-slate-400">Degree Level</label>
+              <select 
+                id="degreeLevel"
+                name="degreeLevel"
+                className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 rounded-lg text-slate-800 dark:text-white"
+                onChange={e => setNewScholarship({ ...newScholarship, degreeLevel: e.target.value })}
+              >
+                <option value="">Select Level</option>
+                <option value="Undergraduate">Undergraduate</option>
+                <option value="Postgraduate">Postgraduate</option>
+                <option value="PhD">PhD</option>
+              </select>
+            </div>
 
-                  {/* Description */}
-                  <div className="md:col-span-2">
-                    <label className="text-sm font-semibold text-slate-600">Description</label>
-                    <textarea className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg h-20 resize-none"
-                      onChange={e => setNewScholarship({ ...newScholarship, description: e.target.value })} />
-                  </div>
-                </div>
-              </div>
+            {/* Category */}
+            <div>
+              <label htmlFor="category" className="text-sm font-semibold text-slate-600 dark:text-slate-400">Category</label>
+              <input 
+                id="category"
+                name="category"
+                className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg text-slate-800 dark:text-white"
+                placeholder="e.g. Merit" 
+                onChange={e => setNewScholarship({ ...newScholarship, category: e.target.value })} 
+              />
+            </div>
 
-              <div className="p-6 border-t border-slate-200 dark:border-slate-800 flex gap-4">
-                <button onClick={() => setShowAdminModal(false)} className="flex-1 py-2 rounded-lg text-slate-500">Cancel</button>
-                <button onClick={handleAddScholarship} className="flex-2 bg-teal-600 text-white py-2 rounded-lg font-bold hover:bg-teal-700">Save</button>
-              </div>
+            {/* URL */}
+            <div className="md:col-span-2">
+              <label htmlFor="officialUrl" className="text-sm font-semibold text-slate-600 dark:text-slate-400">Official Website URL</label>
+              <input
+                id="officialUrl"
+                name="officialUrl"
+                type="url"
+                className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg text-slate-800 dark:text-white"
+                placeholder="https://example.com/scholarship"
+                onChange={e => setNewScholarship({ ...newScholarship, officialUrl: e.target.value })} 
+              />
+            </div>
+
+            {/* GPA */}
+            <div>
+              <label htmlFor="gpaRequirement" className="text-sm font-semibold text-slate-600 dark:text-slate-400">Min GPA</label>
+              <input 
+                id="gpaRequirement"
+                name="gpaRequirement"
+                type="number" 
+                step="0.1" 
+                className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg text-slate-800 dark:text-white"
+                onChange={e => setNewScholarship({ ...newScholarship, gpaRequirement: Number(e.target.value) })} 
+              />
+            </div>
+
+            {/* Eligibility */}
+            <div>
+              <label htmlFor="eligibility" className="text-sm font-semibold text-slate-600 dark:text-slate-400">Eligibility (comma separated)</label>
+              <input 
+                id="eligibility"
+                name="eligibility"
+                className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg text-slate-800 dark:text-white"
+                placeholder="Income < 2L, Indian Citizen"
+                onChange={e => setNewScholarship({ ...newScholarship, eligibility: e.target.value.split(',').map(item => item.trim()) })} 
+              />
+            </div>
+
+            {/* Description */}
+            <div className="md:col-span-2">
+              <label htmlFor="description" className="text-sm font-semibold text-slate-600 dark:text-slate-400">Description</label>
+              <textarea 
+                id="description"
+                name="description"
+                className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg h-20 resize-none text-slate-800 dark:text-white"
+                onChange={e => setNewScholarship({ ...newScholarship, description: e.target.value })} 
+              />
             </div>
           </div>
+        </div>
+
+        <div className="p-6 border-t border-slate-200 dark:border-slate-800 flex gap-4 bg-slate-50 dark:bg-slate-900/50">
+          <button 
+            type="button"
+            onClick={() => setShowAdminModal(false)} 
+            className="flex-1 py-2 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            type="button"
+            onClick={handleAddScholarship} 
+            className="flex-2 bg-teal-600 text-white py-2 rounded-lg font-bold hover:bg-teal-700 transition-colors shadow-lg shadow-teal-500/20"
+          >
+            Save Scholarship
+          </button>
         </div>
       </div>
     </div>

@@ -106,46 +106,54 @@ const Browse = ({ t, scholarships, currentUser, searchQuery, setSearchQuery, app
                       Website <ExternalLink className="w-3 h-3" />
                     </a>
                   ) : <div />}
-
-                  {/* FIXED LINE 110: Added optional chaining currentUser?.role */}
+                  
                   {currentUser?.role === 'admin' ? (
-                    <div className="  px-3 py-2 md:mt-4 md:p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50">
-                      <p className="text-sm text-slate-600 dark:text-slate-400 flex flex-wrap items-center gap-2">
-                        <span>Apply here:</span>
-                        <a
-                          href={s.officialUrl?.startsWith('http') ? s.officialUrl : `https://${s.officialUrl}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 dark:text-blue-400 font-bold hover:underline break-all"
-                        >
-                          {s.officialUrl}
-                        </a>
-                      </p>
+                    <div className="mt-4 p-3 rounded-xl bg-blue-900/20 border border-blue-800/50">
+                      <div className="flex items-center justify-between gap-3 w-full">
+                        <span className="text-sm text-slate-400 whitespace-nowrap shrink-0">
+                          Apply here:
+                        </span>
+                        <div className="min-w-0 flex-1 flex justify-end">
+                          <a
+                            href={s.officialUrl?.startsWith('http') ? s.officialUrl : `https://${s.officialUrl}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-400 font-bold hover:underline truncate text-sm text-right"
+                            title={s.officialUrl}
+                          >{s.officialUrl?.length > 10
+                            ? `${s.officialUrl.substring(0, 14)}...`
+                            : s.officialUrl
+                            }
+                          </a>
+                        </div>
+
+                      </div>
                     </div>
-                  ) : (
-                    <>
-                      {hasApplied ? (
-                        <button
-                          disabled
-                          className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 px-5 py-2 rounded-lg text-sm font-bold border border-slate-200 dark:border-slate-700"
-                        >
-                          <CheckCircle className="w-4 h-4 text-emerald-500" />
-                          {appliedData?.status || "Applied"}
-                        </button>
-                      ) : (
-                        <button
-                          onClick={() => handleApply(s._id)}
-                          disabled={isLoading || !currentUser}
-                          className={`px-6 py-2 rounded-lg text-sm font-bold transition-all shadow-sm active:scale-95 ${isLoading || !currentUser
-                            ? 'bg-slate-400 cursor-not-allowed text-white'
-                            : 'bg-teal-600 hover:bg-teal-700 text-white hover:shadow-teal-200 dark:hover:shadow-none'
-                            }`}
-                        >
-                          {!currentUser ? 'Login to Apply' : (isLoading ? 'Processing...' : t.apply)}
-                        </button>
-                      )}
-                    </>
-                  )}
+                  )
+                    : (
+                      <>
+                        {hasApplied ? (
+                          <button
+                            disabled
+                            className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 px-5 py-2 rounded-lg text-sm font-bold border border-slate-200 dark:border-slate-700"
+                          >
+                            <CheckCircle className="w-4 h-4 text-emerald-500" />
+                            {appliedData?.status || "Applied"}
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleApply(s._id)}
+                            disabled={isLoading || !currentUser}
+                            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all shadow-sm active:scale-95 ${isLoading || !currentUser
+                              ? 'bg-slate-400 cursor-not-allowed text-white'
+                              : 'bg-teal-600 hover:bg-teal-700 text-white hover:shadow-teal-200 dark:hover:shadow-none'
+                              }`}
+                          >
+                            {!currentUser ? 'Login to Apply' : (isLoading ? 'Processing...' : t.apply)}
+                          </button>
+                        )}
+                      </>
+                    )}
                 </div>
               </div>
             );
