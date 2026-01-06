@@ -205,6 +205,7 @@ const App = () => {
     const map: Record<Language, string> = { en: 'ENG', hi: 'HIN', bn: 'BEN', ta: 'TAM', or: 'ODI', ml: 'MAL' };
     return map[code];
   };
+  
   const handleBack = () => {
     if (authStep === 'profile') {
       setAuthStep('roleSelection');
