@@ -186,7 +186,7 @@ const App = () => {
       if (response.data.application) {
         setApplications(prev => [...prev, response.data.application]);
       }
-      alert("Application submitted successfully!");
+    
     } catch (error: any) {
       alert(error.response?.data?.message || 'Could not process application.');
     } finally {
@@ -210,7 +210,7 @@ const App = () => {
     if (authStep === 'profile') {
       setAuthStep('roleSelection');
     } else if (authStep === 'roleSelection') {
-      setProfileData({ ...profileData, role: '' }); // Reset role choice
+      setProfileData({ ...profileData, role: '' });
       setAuthStep('otp');
     } else if (authStep === 'otp') {
       setAuthStep('email');
@@ -303,7 +303,6 @@ const App = () => {
         officialUrl: '', adminId: ''
       });
 
-      alert("Scholarship posted successfully!");
     } catch (error: any) {
       alert(error.response?.data?.message || "Failed to save scholarship.");
     } finally {
