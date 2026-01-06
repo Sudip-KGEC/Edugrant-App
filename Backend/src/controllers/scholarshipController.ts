@@ -36,12 +36,12 @@ export const addScholarship = async (req: Request, res: Response) => {
       amount: Number(amount),
       gpaRequirement: Number(gpaRequirement),
       deadline: new Date(deadline),
-      category: category || 'General',
+      category: category || 'Merit',
       degreeLevel,
       description,
       eligibility,
       officialUrl,
-      adminId: user._id // CRITICAL: Link to current admin
+      adminId: user._id 
     });
 
     const savedScholarship = await scholarship.save();

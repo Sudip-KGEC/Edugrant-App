@@ -239,7 +239,7 @@ const App = () => {
         newUser.class12Marks = Number(profileData.class12);
         newUser.highestDegree = profileData.highestDegree;
         newUser.currentDegree = profileData.currentDegree;
-        newUser.fieldOfStudy = profileData.fieldOfStudy || 'General';
+        newUser.fieldOfStudy = profileData.fieldOfStudy || 'Engineering';
       }
 
       // 3. Send to Backend via your Axios registerUser helper

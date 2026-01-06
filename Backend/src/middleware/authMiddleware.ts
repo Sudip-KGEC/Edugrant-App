@@ -9,7 +9,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
   if (!token) {
     return res.status(401).json({ message: "Not authorized, please login" });
   }
-
+  
   try {
     const secret = process.env.JWT_SECRET;
     if (!secret) {

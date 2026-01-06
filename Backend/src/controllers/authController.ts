@@ -96,6 +96,14 @@ export const verifyOtp = async (req: Request, res: Response) => {
 };
 
 export const register = async (req: Request, res: Response) => {
+
+  if (!req.body || !req.body.email || !req.body.name ) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "All fields are required. Make sure you are sending a JSON body." 
+    });
+  }
+
   try {
     const { email } = req.body;
 
@@ -103,7 +111,7 @@ export const register = async (req: Request, res: Response) => {
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
-
+     
     const newUser = new User(req.body);
     const savedUser = await newUser.save();
 
@@ -122,7 +130,7 @@ export const register = async (req: Request, res: Response) => {
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
