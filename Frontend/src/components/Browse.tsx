@@ -14,7 +14,7 @@ const Browse = ({ t, scholarships, currentUser, searchQuery, setSearchQuery, app
   });
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8 scrollbar-hide">
       {/* Search Header */}
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <h2 className="text-3xl font-bold text-teal-900 dark:text-teal-400">{t.browse}</h2>
@@ -101,7 +101,7 @@ const Browse = ({ t, scholarships, currentUser, searchQuery, setSearchQuery, app
                       href={s.officialUrl.startsWith('http') ? s.officialUrl : `https://${s.officialUrl}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-[11px] text-teal-600 dark:text-teal-400 flex items-center gap-1 hover:underline font-bold"
+                      className="text-md text-teal-600 dark:text-teal-400 flex items-center gap-1 hover:underline font-bold"
                     >
                       Website <ExternalLink className="w-3 h-3" />
                     </a>
@@ -109,9 +109,9 @@ const Browse = ({ t, scholarships, currentUser, searchQuery, setSearchQuery, app
 
                   {/* FIXED LINE 110: Added optional chaining currentUser?.role */}
                   {currentUser?.role === 'admin' ? (
-                    <div className="mt-4 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50">
+                    <div className="  px-3 py-2 md:mt-4 md:p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800/50">
                       <p className="text-sm text-slate-600 dark:text-slate-400 flex flex-wrap items-center gap-2">
-                        <span>For apply visit this website:</span>
+                        <span>Apply here:</span>
                         <a
                           href={s.officialUrl?.startsWith('http') ? s.officialUrl : `https://${s.officialUrl}`}
                           target="_blank"

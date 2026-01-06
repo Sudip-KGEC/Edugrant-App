@@ -2,15 +2,20 @@ import React, { useState, useEffect } from 'react';
 import {
   GraduationCap,
   X,
-  ArrowLeft,
   Globe,
   LogOut,
   User as UserIcon,
   CheckCircle,
   ChevronDown,
   Sun,
-  Moon
+  Moon,
+  UserX,
+  UserCheck,
+  Menu, House, Search, LayoutDashboard
 } from 'lucide-react';
+
+import { motion, AnimatePresence } from 'framer-motion';
+
 
 import { TRANSLATIONS } from './constants';
 import { ScholarshipForm, Application, User, Language } from '../types';
@@ -22,6 +27,9 @@ import Home from './components/Home';
 import Browse from './components/Browse';
 import Dashboard from './components/Dashboard';
 import Admin from './components/Admin';
+import MobileNavLink from './components/MobileNavLink';
+import AddScholarshipModal from './components/AddScholarshipModal';
+import AuthModal from './components/AuthModal';
 
 const App = () => {
 
@@ -31,7 +39,7 @@ const App = () => {
     }
     return 'light';
   });
-
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentLang, setCurrentLang] = useState<Language>('en');
   const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
@@ -155,36 +163,36 @@ const App = () => {
     }
   };
 
- const handleApply = async (schId: string) => {
-  if (!currentUser) return handleLoginStart();
+  const handleApply = async (schId: string) => {
+    if (!currentUser) return handleLoginStart();
 
-  // Improved check: handles both string IDs and populated object IDs
-  const alreadyApplied = (currentUser.appliedScholarships ?? []).some((id: any) => {
-    const compareId = typeof id === 'string' ? id : id._id?.toString();
-    return compareId === schId;
-  });
+    // Improved check: handles both string IDs and populated object IDs
+    const alreadyApplied = (currentUser.appliedScholarships ?? []).some((id: any) => {
+      const compareId = typeof id === 'string' ? id : id._id?.toString();
+      return compareId === schId;
+    });
 
-  if (alreadyApplied) return alert("You have already applied for this scholarship.");
+    if (alreadyApplied) return alert("You have already applied for this scholarship.");
 
-  setIsLoading(true);
-  try {
-    const response = await api.post('/api/scholarships/apply', { scholarshipId: schId });
+    setIsLoading(true);
+    try {
+      const response = await api.post('/api/scholarships/apply', { scholarshipId: schId });
 
-    setCurrentUser(prev => prev ? ({
-      ...prev,
-      appliedScholarships: [...(prev.appliedScholarships || []), schId]
-    }) : null);
+      setCurrentUser(prev => prev ? ({
+        ...prev,
+        appliedScholarships: [...(prev.appliedScholarships || []), schId]
+      }) : null);
 
-    if (response.data.application) {
-      setApplications(prev => [...prev, response.data.application]);
+      if (response.data.application) {
+        setApplications(prev => [...prev, response.data.application]);
+      }
+      alert("Application submitted successfully!");
+    } catch (error: any) {
+      alert(error.response?.data?.message || 'Could not process application.');
+    } finally {
+      setIsLoading(false);
     }
-    alert("Application submitted successfully!");
-  } catch (error: any) {
-    alert(error.response?.data?.message || 'Could not process application.');
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   const handleLoginStart = () => {
     setAuthStep('email');
@@ -197,16 +205,16 @@ const App = () => {
     const map: Record<Language, string> = { en: 'ENG', hi: 'HIN', bn: 'BEN', ta: 'TAM', or: 'ODI', ml: 'MAL' };
     return map[code];
   };
- const handleBack = () => {
-  if (authStep === 'profile') {
-    setAuthStep('roleSelection');
-  } else if (authStep === 'roleSelection') {
-    setProfileData({ ...profileData, role: '' }); // Reset role choice
-    setAuthStep('otp');
-  } else if (authStep === 'otp') {
-    setAuthStep('email');
-  }
-};
+  const handleBack = () => {
+    if (authStep === 'profile') {
+      setAuthStep('roleSelection');
+    } else if (authStep === 'roleSelection') {
+      setProfileData({ ...profileData, role: '' }); // Reset role choice
+      setAuthStep('otp');
+    } else if (authStep === 'otp') {
+      setAuthStep('email');
+    }
+  };
 
   const handleProfileSubmit = async () => {
     setIsLoading(true);
@@ -259,48 +267,48 @@ const App = () => {
     }
   };
 
-const handleAddScholarship = async () => {
-  // 1. Basic Validation
-  if (!newScholarship.name.trim() || !newScholarship.provider.trim()) {
-    alert("Scholarship Name and Provider are required.");
-    return;
-  }
+  const handleAddScholarship = async () => {
+    // 1. Basic Validation
+    if (!newScholarship.name.trim() || !newScholarship.provider.trim()) {
+      alert("Scholarship Name and Provider are required.");
+      return;
+    }
 
-  setIsLoading(true);
-  try {
-    // 2. Prepare Payload with correct types for MongoDB
-    const scholarshipPayload = {
-      ...newScholarship,
-      name: newScholarship.name.trim(),
-      provider: newScholarship.provider.trim(),
-      amount: Number(newScholarship.amount) || 0, // Ensure it's a number
-      gpaRequirement: Number(newScholarship.gpaRequirement) || 0,
-      adminId: currentUser?.id || currentUser?.id, // Support both ID formats
-      eligibility: Array.isArray(newScholarship.eligibility) 
-        ? newScholarship.eligibility 
-        : [newScholarship.eligibility]
-    };
+    setIsLoading(true);
+    try {
+      // 2. Prepare Payload with correct types for MongoDB
+      const scholarshipPayload = {
+        ...newScholarship,
+        name: newScholarship.name.trim(),
+        provider: newScholarship.provider.trim(),
+        amount: Number(newScholarship.amount) || 0, // Ensure it's a number
+        gpaRequirement: Number(newScholarship.gpaRequirement) || 0,
+        adminId: currentUser?.id || currentUser?.id, // Support both ID formats
+        eligibility: Array.isArray(newScholarship.eligibility)
+          ? newScholarship.eligibility
+          : [newScholarship.eligibility]
+      };
 
-    const savedScholarship = await createScholarship(scholarshipPayload);
+      const savedScholarship = await createScholarship(scholarshipPayload);
 
-    // 3. Update State & UI
-    setScholarships((prev) => [savedScholarship, ...prev]);
-    setShowAdminModal(false);
-    
-    // Reset form
-    setNewScholarship({
-      name: '', provider: '', amount: '', deadline: '', category: '',
-      gpaRequirement: '', degreeLevel: '', description: '', eligibility: [],
-      officialUrl: '', adminId: ''
-    });
+      // 3. Update State & UI
+      setScholarships((prev) => [savedScholarship, ...prev]);
+      setShowAdminModal(false);
 
-    alert("Scholarship posted successfully!");
-  } catch (error: any) {
-    alert(error.response?.data?.message || "Failed to save scholarship.");
-  } finally {
-    setIsLoading(false);
-  }
-};
+      // Reset form
+      setNewScholarship({
+        name: '', provider: '', amount: '', deadline: '', category: '',
+        gpaRequirement: '', degreeLevel: '', description: '', eligibility: [],
+        officialUrl: '', adminId: ''
+      });
+
+      alert("Scholarship posted successfully!");
+    } catch (error: any) {
+      alert(error.response?.data?.message || "Failed to save scholarship.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   // --- Views logic ---
   const renderContent = () => {
 
@@ -340,17 +348,17 @@ const handleAddScholarship = async () => {
         />;
 
       case 'admin':
-       if (currentUser && currentUser.role === 'admin') {
-    return (
-      <Admin 
-        setShowAdminModal={setShowAdminModal} 
-        scholarships={scholarships} 
-        currentUser={currentUser} 
-      />
-    );
-  }
-  setView('home'); 
-  return null;
+        if (currentUser && currentUser.role === 'admin') {
+          return (
+            <Admin
+              setShowAdminModal={setShowAdminModal}
+              scholarships={scholarships}
+              currentUser={currentUser}
+            />
+          );
+        }
+        setView('home');
+        return null;
 
       default:
         return <Home t={t} setView={setView} handleLoginStart={handleLoginStart} currentUser={currentUser} />;
@@ -361,7 +369,7 @@ const handleAddScholarship = async () => {
 
 
   return (
-    <div className="min-h-screen scrollbar-hide flex flex-col font-sans text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
+    <div className="min-h-screen scrollbar-hide  flex flex-col font-sans text-slate-800 dark:text-slate-100 bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
 
       {/* 1. Global Loader */}
       {isLoading && <LoadingOverlay />}
@@ -369,12 +377,14 @@ const handleAddScholarship = async () => {
       <nav className="bg-white dark:bg-slate-900 shadow-sm sticky top-0 z-40 border-b border-transparent dark:border-slate-800 transition-colors">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
+            {/* Navbar Logo */}
             <div className="flex items-center cursor-pointer" onClick={() => setView('home')}>
               <GraduationCap className="h-8 w-8 text-teal-600 dark:text-teal-500 mr-2 animate-float" />
               <span className="font-bold text-xl text-teal-900 dark:text-teal-400 tracking-tight">{t.title}</span>
             </div>
 
             <div className="flex items-center gap-4">
+              {/* Desktop Nav Links */}
               <div className="hidden md:flex space-x-4">
                 <button onClick={() => setView('home')} className={`${view === 'home' ? 'text-teal-600 dark:text-teal-400' : 'text-slate-600 dark:text-slate-400'} hover:text-teal-600 dark:hover:text-teal-400 font-medium transition-colors`}>{t.home}</button>
                 <button onClick={() => setView('browse')} className={`${view === 'browse' ? 'text-teal-600 dark:text-teal-400' : 'text-slate-600 dark:text-slate-400'} hover:text-teal-600 dark:hover:text-teal-400 font-medium transition-colors`}>{t.browse}</button>
@@ -397,7 +407,6 @@ const handleAddScholarship = async () => {
                   Admin Panel
                 </button>
               </div>
-
               {/* Theme Toggle */}
               <button
                 onClick={toggleTheme}
@@ -406,7 +415,6 @@ const handleAddScholarship = async () => {
               >
                 {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
               </button>
-
               {/* Language Toggle */}
               <div className="relative">
                 <button
@@ -458,20 +466,111 @@ const handleAddScholarship = async () => {
                 )}
               </div>
 
+              {/* User Auth */}
               {currentUser ? (
-                <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-full bg-teal-100 dark:bg-teal-900 flex items-center justify-center text-teal-700 dark:text-teal-300 font-bold">
-                    {currentUser?.name?.charAt(0) || '?'}
+                <div className=" hidden md:flex items-center gap-1">
+                  <div className=" h-4 w-6 md:h-10 md:w-10 rounded-full bg-teal-100 dark:bg-teal-900 flex items-center justify-center text-teal-700 dark:text-teal-300 font-bold">
+                    <UserCheck className="inline-block h-4 w-4 md:h-5 md:w-5 ml-1" />
                   </div>
                   <button onClick={handleLogout} className="text-sm text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
-                    <LogOut className="w-5 h-5" />
+                    <LogOut className="w-5 h-5 md:w-6 md:h-6" />
                   </button>
                 </div>
               ) : (
-                <button onClick={handleLoginStart} className="bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors">
-                  {t.login}
+                <button onClick={handleLoginStart} className="bg-teal-600 hidden md:flex text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors">
+                  <UserX className="w-4 h-4 inline-block mr-1" />
                 </button>
               )}
+
+              {/* Mobile Menu Button */}
+              <button
+                className="md:hidden p-2 text-slate-600 dark:text-slate-400"
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+              >
+                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              </button>
+
+              {/* Mobile Menu */}
+              <AnimatePresence>
+                {isMenuOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+
+                    className="absolute top-16 left-0 w-full z-50 overflow-y-auto scrollbar-hide border-b 
+                 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md 
+                 border-slate-200 dark:border-slate-800 transition-colors shadow-xl"
+                  >
+                    <div className="flex flex-col p-4 space-y-4">
+                      {/* User Section */}
+                      <div className="pb-2 border-b border-slate-100 dark:border-slate-800">
+                        {currentUser ? (
+                          <div className="flex items-center justify-between px-2">
+                            <div className="flex items-center gap-3">
+                              <div className="h-10 w-10 rounded-full bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center text-teal-700 dark:text-teal-300 font-bold">
+                                <UserCheck size={20} />
+                              </div>
+                              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+                                {currentUser.name || 'Profile'}
+                              </span>
+                            </div>
+                            <button
+                              onClick={handleLogout}
+                              className="p-2 text-slate-500 hover:text-red-500 transition-colors"
+                            >
+                              <LogOut size={20} />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={handleLoginStart}
+                            className="w-full bg-teal-600 text-white py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-teal-500/20"
+                          >
+                            <UserX size={18} /> Sign In
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Navigation Links */}
+                      <div className="space-y-1">
+                        <MobileNavLink
+                          icon={<House size={18} />}
+                          label={t.home}
+                          active={view === 'home'}
+                          onClick={() => { setView('home'); setIsMenuOpen(false); }}
+                        />
+                        <MobileNavLink
+                          icon={<Search size={18} />}
+                          label={t.browse}
+                          active={view === 'browse'}
+                          onClick={() => { setView('browse'); setIsMenuOpen(false); }}
+                        />
+                        {currentUser && (
+                          <MobileNavLink
+                            icon={<LayoutDashboard size={18} />}
+                            label={t.dashboard}
+                            active={view === 'dashboard'}
+                            onClick={() => { setView('dashboard'); setIsMenuOpen(false); }}
+                          />
+                        )}
+                      </div>
+                      {/* Admin Panel Link */}
+                      <button
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          if (!currentUser) setShowAuthModal(true);
+                          else if (currentUser.role === 'admin') setView('admin');
+                        }}
+                        className="w-full text-left text-xs font-semibold uppercase tracking-widest p-3 text-slate-400 dark:text-slate-500 hover:text-teal-500 border-t border-slate-100 dark:border-slate-800 mt-2"
+                      >
+                        Admin Panel
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
             </div>
           </div>
         </div>
@@ -484,359 +583,27 @@ const handleAddScholarship = async () => {
 
       {/* Auth Modal */}
       {showAuthModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-200 dark:border-slate-800 transition-colors">
-            <div className="flex justify-between items-center mb-6">
-
-
-              {authStep !== 'email' && (
-                <button
-                  onClick={handleBack}
-                  className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors text-slate-500"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </button>
-              )}
-
-              <h2 className="text-xl font-bold text-slate-800 dark:text-white">
-                {authStep === 'profile' ? t.profileSetup : t.login}
-              </h2>
-              <button onClick={() => setShowAuthModal(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-
-            {authStep === 'email' && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email Address</label>
-                  <input
-                    type="email"
-                    value={authEmail}
-                    onChange={(e) => setAuthEmail(e.target.value)}
-                    placeholder={t.emailPlaceholder}
-                    className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                  />
-                </div>
-                <button
-                  onClick={handleSendOtp}
-                  disabled={!authEmail}
-                  className="w-full bg-teal-600 text-white py-2 rounded-lg font-medium hover:bg-teal-700 disabled:opacity-50"
-                >
-                  {t.getOtp}
-                </button>
-              </div>
-            )}
-
-            {authStep === 'otp' && (
-              <div className="space-y-4">
-                <p className="text-sm text-slate-600 dark:text-slate-400">OTP sent to {authEmail}</p>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Enter OTP</label>
-                  <input
-                    type="text"
-                    value={authOtp}
-                    onChange={(e) => setAuthOtp(e.target.value)}
-                    placeholder={t.otpPlaceholder}
-                    className="w-full px-4 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
-                  />
-                </div>
-                <button
-                  onClick={handleVerifyOtp}
-                  disabled={authOtp.length < 4}
-                  className="w-full bg-teal-600 text-white py-2 rounded-lg font-medium hover:bg-teal-700 disabled:opacity-50"
-                >
-                  {t.verify}
-                </button>
-                <button onClick={() => setAuthStep('email')} className="w-full text-sm text-slate-500 dark:text-slate-400 mt-2 hover:underline">Change Email</button>
-              </div>
-            )}
-
-
-            {authStep === 'roleSelection' && (
-              <div className="space-y-6 animate-in fade-in zoom-in duration-300">
-                <div className="text-center">
-                  <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2">Select Account Type</h3>
-                  <p className="text-slate-500 text-sm">How will you be using the platform?</p>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4">
-                  {/* Student Path */}
-                  <button
-                    onClick={() => {
-                      setProfileData({ ...profileData, role: 'student' });
-                      setAuthStep('profile');
-                    }}
-                    className="flex items-center p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-teal-500 transition-all group text-left"
-                  >
-                    <div className="bg-teal-100 dark:bg-teal-500/10 p-3 rounded-lg mr-4 group-hover:bg-teal-500/20">
-                      <span className="text-2xl">🎓</span>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-slate-800 dark:text-white">Student</h4>
-                      <p className="text-xs text-slate-500">Find and apply for scholarships</p>
-                    </div>
-                  </button>
-
-                  {/* Admin Path */}
-                  <button
-                    onClick={() => {
-                      setProfileData({ ...profileData, role: 'admin' });
-                      setAuthStep('profile');
-                    }}
-                    className="flex items-center p-4 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl hover:border-teal-500 transition-all group text-left"
-                  >
-                    <div className="bg-purple-100 dark:bg-purple-500/10 p-3 rounded-lg mr-4 group-hover:bg-purple-500/20">
-                      <span className="text-2xl">💼</span>
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-slate-800 dark:text-white">Administrator</h4>
-                      <p className="text-xs text-slate-500">Post and manage scholarship programs</p>
-                    </div>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {authStep === 'profile' && (
-              <div className="space-y-4 max-h-[80vh] overflow-y-auto px-1">
-                <div className="text-center border-b border-slate-100 dark:border-slate-800 pb-4 mb-4">
-                  <h3 className="text-xl font-bold text-slate-800 dark:text-white">Professional Profile</h3>
-                  <p className="text-xs text-teal-600 font-bold uppercase tracking-widest mt-1">
-                    Account Type: {profileData.role}
-                  </p>
-                </div>
-
-                {/* Common Name Field */}
-                <div className="space-y-1">
-                  <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Full Identity</label>
-                  <input
-                    placeholder="Legal Full Name"
-                    value={profileData.name}
-                    onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                    className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg focus:ring-2 focus:ring-teal-500 outline-none"
-                  />
-                </div>
-
-                {profileData.role === 'admin' ? (
-                  /* --- ADMIN PROFESSIONAL PATH --- */
-                  <div className="space-y-4 animate-in fade-in slide-in-from-right duration-500">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Official Organization</label>
-                      <input
-                        placeholder="University or Institute Name"
-                        onChange={(e) => setProfileData({ ...profileData, organization: e.target.value })}
-                        className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Department</label>
-                        <input
-                          placeholder="e.g. Administration"
-                          onChange={(e) => setProfileData({ ...profileData, department: e.target.value })}
-                          className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Designation</label>
-                        <input
-                          placeholder="e.g. Coordinator"
-                          onChange={(e) => setProfileData({ ...profileData, designation: e.target.value })}
-                          className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg"
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Official Employee ID</label>
-                      <input
-                        placeholder="Work ID Number"
-                        onChange={(e) => setProfileData({ ...profileData, employeeId: e.target.value })}
-                        className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg"
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  /* --- STUDENT ACADEMIC PATH --- */
-                  <div className="space-y-4 animate-in fade-in slide-in-from-left duration-500">
-                    <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Educational Institution</label>
-                      <input
-                        placeholder="College/School Name"
-                        onChange={(e) => setProfileData({ ...profileData, college: e.target.value })}
-                        className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg"
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Current CGPA</label>
-                        <input
-                          type="number" step="0.01"
-                          onChange={(e) => setProfileData({ ...profileData, cgpa: e.target.value })}
-                          className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Class 12 Marks (%)</label>
-                        <input
-                          type="number"
-                          onChange={(e) => setProfileData({ ...profileData, class12: e.target.value })}
-                          className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg"
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Highest Qualification</label>
-                        <select
-                          onChange={(e) => setProfileData({ ...profileData, highestDegree: e.target.value })}
-                          className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg text-sm"
-                        >
-                          <option value="Class 12">Class 12</option>
-                          <option value="Diploma">Diploma</option>
-                          <option value="Undergraduate">Undergraduate</option>
-                          <option value="Undergraduate">Postgraduate</option>
-                          <option value="Undergraduate">PhD</option>
-                        </select>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Current Degree</label>
-                        <select
-                          onChange={(e) => setProfileData({ ...profileData, currentDegree: e.target.value })}
-                          className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg text-sm"
-                        >
-                          <option value="Class 12">Class 12</option>
-                          <option value="Diploma">Diploma</option>
-                          <option value="Undergraduate">Undergraduate</option>
-                          <option value="Undergraduate">Postgraduate</option>
-                          <option value="Undergraduate">PhD</option>
-                        </select>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-slate-400 uppercase ml-1">Field of Study</label>
-                        <select
-                          onChange={(e) => setProfileData({ ...profileData, fieldOfStudy: e.target.value })}
-                          className="w-full px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg text-sm"
-                        >
-                          <option value="Engineering">Engineering</option>
-                          <option value="Medical">Medical</option>
-                          <option value="General">General</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  onClick={handleProfileSubmit}
-                  className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-lg font-bold shadow-lg transition-transform active:scale-95 mt-2"
-                >
-                  Finalize Professional Account
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+        <AuthModal
+          authStep={authStep}
+          setAuthStep={setAuthStep}
+          authEmail={authEmail}
+          setAuthEmail={setAuthEmail}
+          authOtp={authOtp}
+          setAuthOtp={setAuthOtp}
+          handleSendOtp={handleSendOtp}
+          handleVerifyOtp={handleVerifyOtp}
+          handleBack={handleBack}
+          setShowAuthModal={setShowAuthModal}
+          t={t}
+          setProfileData={setProfileData}
+          profileData={profileData}
+          handleProfileSubmit={handleProfileSubmit}
+        />
       )}
 
       {/* Admin Add Modal */}
       {showAdminModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-xl p-6 w-full max-w-lg border border-slate-200 dark:border-slate-800 transition-colors">
-            <h3 className="text-xl font-bold mb-4 text-slate-800 dark:text-white">Add New Scholarship</h3>
-            <div className="space-y-6 max-w-2xl mx-auto p-8">
-              <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                <div className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
-
-                  <div className="p-6 border-b border-slate-200 dark:border-slate-800">
-                    <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Add New Scholarship</h2>
-                  </div>
-
-                  {/* Scrollable Body */}
-                  <div className="p-6 overflow-y-auto space-y-4 custom-scrollbar scrollbar-hide">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                      {/* Name & Provider */}
-                      <div className="md:col-span-1">
-                        <label className="text-sm font-semibold text-slate-600">Name</label>
-                        <input className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg"
-                          onChange={e => setNewScholarship({ ...newScholarship, name: e.target.value })} />
-                      </div>
-                      <div className="md:col-span-1">
-                        <label className="text-sm font-semibold text-slate-600">Provider</label>
-                        <input className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg"
-                          onChange={e => setNewScholarship({ ...newScholarship, provider: e.target.value })} />
-                      </div>
-
-                      {/* Amount & Deadline */}
-                      <div>
-                        <label className="text-sm font-semibold text-slate-600">Amount (INR)</label>
-                        <input type="number" className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg"
-                          onChange={e => setNewScholarship({ ...newScholarship, amount: Number(e.target.value) })} />
-                      </div>
-                      <div>
-                        <label className="text-sm font-semibold text-slate-600">Deadline</label>
-                        <input type="date" className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg"
-                          onChange={e => setNewScholarship({ ...newScholarship, deadline: e.target.value })} />
-                      </div>
-
-                      {/* Degree Level & Category */}
-                      <div>
-                        <label className="text-sm font-semibold text-slate-600">Degree Level</label>
-                        <select className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-2.5 rounded-lg"
-                          onChange={e => setNewScholarship({ ...newScholarship, degreeLevel: e.target.value })}>
-                          <option value="">Select Level</option>
-                          <option value="Undergraduate">Undergraduate</option>
-                          <option value="Postgraduate">Postgraduate</option>
-                          <option value="PhD">PhD</option>
-                        </select>
-                      </div>
-                      <div>
-                        <label className="text-sm font-semibold text-slate-600">Category</label>
-                        <input className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg"
-                          placeholder="e.g. Merit" onChange={e => setNewScholarship({ ...newScholarship, category: e.target.value })} />
-                      </div>
-                      {/* LINK */}
-                      <div className="md:col-span-2">
-                        <label className="text-sm font-semibold text-slate-600">Official Website URL</label>
-                        <input
-                          type="url"
-                          className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg"
-                          placeholder="https://example.com/scholarship"
-                          onChange={e => setNewScholarship({ ...newScholarship, officialUrl: e.target.value })} />
-                      </div>
-
-                      {/* GPA & Eligibility (Array Input) */}
-                      <div>
-                        <label className="text-sm font-semibold text-slate-600">Min GPA</label>
-                        <input type="number" step="0.1" className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg"
-                          onChange={e => setNewScholarship({ ...newScholarship, gpaRequirement: Number(e.target.value) })} />
-                      </div>
-                      <div>
-                        <label className="text-sm font-semibold text-slate-600">Eligibility (comma separated)</label>
-                        <input className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg"
-                          placeholder="Income < 2L, Indian Citizen"
-                          onChange={e => setNewScholarship({ ...newScholarship, eligibility: e.target.value.split(',').map(item => item.trim()) })} />
-                      </div>
-
-                      {/* Description */}
-                      <div className="md:col-span-2">
-                        <label className="text-sm font-semibold text-slate-600">Description</label>
-                        <textarea className="w-full mt-1 border border-slate-300 dark:border-slate-700 bg-transparent p-2.5 rounded-lg h-20 resize-none"
-                          onChange={e => setNewScholarship({ ...newScholarship, description: e.target.value })} />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="p-6 border-t border-slate-200 dark:border-slate-800 flex gap-4">
-                    <button onClick={() => setShowAdminModal(false)} className="flex-1 py-2 rounded-lg text-slate-500">Cancel</button>
-                    <button onClick={handleAddScholarship} className="flex-2 bg-teal-600 text-white py-2 rounded-lg font-bold hover:bg-teal-700">Save</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <AddScholarshipModal newScholarship={newScholarship} setNewScholarship={setNewScholarship} handleAddScholarship={handleAddScholarship} setShowAdminModal={setShowAdminModal} />
       )}
 
       <ChatBot />

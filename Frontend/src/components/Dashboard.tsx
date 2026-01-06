@@ -26,8 +26,10 @@ const Dashboard = ({ t, currentUser, scholarships, setView }) => {
           axios.get(`/api/scholarships?adminId=${currentUser.id || currentUser._id}`, config),
           axios.get('/api/scholarships/admin/applications', config)
         ]);
+
+
         //  Clean and map application data
-        const cleanedApplications = appRes.data.map((app: any) => ({
+        const cleanedApplications = appRes.data?.map((app: any) => ({
           ...app,
           id: app._id || app.id,
           studentName: app.studentId?.name || 'Unknown Student',
@@ -104,7 +106,7 @@ const Dashboard = ({ t, currentUser, scholarships, setView }) => {
 
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8 scrollbar-hide">
       <ProfileHeader user={currentUser} />
 
       {/* Content Logic */}

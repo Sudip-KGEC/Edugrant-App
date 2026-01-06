@@ -13,7 +13,7 @@ const AdminDashboard = ({ myScholarships = [], studentApplications = [], updateS
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
+    <div className="max-w-7xl mx-auto p-6 scrollbar-hide">
       <h3 className="text-2xl font-bold text-slate-800 dark:text-white mb-6">Admin Management</h3>
 
       <div className="flex gap-4 mb-8 border-b border-slate-200 dark:border-slate-800">
@@ -64,7 +64,7 @@ const AdminDashboard = ({ myScholarships = [], studentApplications = [], updateS
           </div>
         </div>
       ) : (
-        <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+        <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden scrollbar-hide">
           <div className="overflow-x-auto">
             <table className="w-full text-left">
               <thead className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">

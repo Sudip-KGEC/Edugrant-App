@@ -52,22 +52,22 @@ const ChatBot: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-6 right-6 z-[50] flex flex-col items-end font-sans">
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end font-sans">
       {/* Chat Window */}
       {isOpen && (
-        <div className="mb-4 w-[340px] sm:w-[385px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 flex flex-col h-[420px] animate-in slide-in-from-bottom-4 zoom-in-95 duration-200 overflow-hidden">
+        <div className="mb-4 w-85 sm:w-96.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200/50 dark:border-slate-700/50 flex flex-col h-105 animate-in slide-in-from-bottom-4 zoom-in-95 duration-200 overflow-hidden">
           
           {/* Stylish Header */}
-          <div className="bg-gradient-to-r from-teal-600 to-emerald-600 p-4 flex justify-between items-center text-white shrink-0">
+          <div className="bg-linear-to-r from-teal-700 to-emerald-700 p-4 flex justify-between items-center text-white shrink-0">
             <div className="flex items-center gap-3">
-              <div className="bg-white/20 p-2 rounded-xl backdrop-blur-sm">
+              <div className="bg-purple-700/30 p-2 rounded-xl backdrop-blur-sm">
                 <Sparkles size={18} className="animate-pulse" />
               </div>
               <div>
                 <span className="font-bold text-sm block tracking-tight">Edugrant Assistant</span>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-                  <span className="text-[10px] text-teal-100 font-medium">AI Agent Online</span>
+                  <span className="text-[10px] text-yellow-100 font-medium">AI Agent Online</span>
                 </div>
               </div>
             </div>
@@ -148,7 +148,7 @@ const ChatBot: React.FC = () => {
       {/* Launcher Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="group relative bg-gradient-to-br from-teal-500 to-emerald-600 text-white p-4 rounded-2xl shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300"
+        className="group relative bg-linear-to-br from-teal-500 to-emerald-600 text-white p-4 rounded-2xl shadow-2xl hover:scale-105 active:scale-95 transition-all duration-300"
       >
         <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl" />
         {isOpen ? (

@@ -1,10 +1,8 @@
 @import "tailwindcss";
 
-/* Crucial for manual dark mode toggle in v4 */
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* Link Tailwind's 'bg-app' utility to our CSS variable */
   --color-app-bg: var(--background);
   --color-app-text: var(--foreground);
 }
@@ -15,7 +13,7 @@
     --foreground: #0f172a;
   }
 
-  /* This ensures that when the .dark class is added to <html>, variables swap */
+  
   .dark {
     --background: #0f172a;
     --foreground: #f8fafc;
@@ -37,4 +35,14 @@
 @keyframes float {
   0%, 100% { transform: translateY(0) rotate(0deg); }
   50% { transform: translateY(-6px) rotate(-8deg); }
+}
+
+
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
 }

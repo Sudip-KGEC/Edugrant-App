@@ -6,7 +6,7 @@ const Admin = ({ setShowAdminModal, scholarships, currentUser }) => {
   const myScholarships = scholarships.filter(s => s.adminId === currentUser?.id || s.adminId === currentUser?._id);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <div className="max-w-6xl mx-auto px-4 py-8 scrollbar-hide">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>

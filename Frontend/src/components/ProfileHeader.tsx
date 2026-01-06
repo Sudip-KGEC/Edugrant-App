@@ -5,8 +5,8 @@ import DetailBox from './DetailBox';
 
 const ProfileHeader = ({ user }) => {
 
-    const isAdmin = user?.role === 'admin';
-     
+  const isAdmin = user?.role === 'admin';
+
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl p-6 mb-8 border border-slate-200 dark:border-slate-800 shadow-sm">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
