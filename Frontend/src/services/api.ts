@@ -74,4 +74,6 @@ export const applyForScholarship = async (scholarshipId: string, userEmail: stri
   return response.data;
 };
 
+api.defaults.withCredentials = true;
+
 export default api;
