@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { TRANSLATIONS } from './constants';
 import {Application, User, Language } from './types';
 import { api, fetchScholarships, getUserProfile, registerUser, verifyOtp, sendOtp, logoutUser } from './services/api';
@@ -52,7 +52,7 @@ const App = () => {
 
   const [showAdminModal, setShowAdminModal] = useState(false);
 
-
+   
 
 
   // --- Auth Sync ---
@@ -293,6 +293,7 @@ const App = () => {
         if (currentUser && currentUser.role === 'admin') {
           return (
             <Admin
+              setLoading={setIsLoading}
               setShowAdminModal={setShowAdminModal}
               scholarships={scholarships}
               currentUser={currentUser}

@@ -120,12 +120,6 @@ http://localhost:5000
 
 🧠 Advanced AI eligibility scoring
 
-👨‍💻 Author
-
-Sudip Das
-🎓 B.Tech (ECE) | Diploma in Renewable Energy Engineering
-💻 Full Stack Developer (MERN)
-📫 GitHub: Sudip-KGEC
 
 ⭐ Show Your Support
 

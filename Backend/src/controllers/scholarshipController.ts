@@ -160,3 +160,32 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
   }
 };
 
+
+
+export const deleteScholarship = async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params; 
+    const user = (req as any).user;
+
+    const scholarship = await Scholarship.findById(id);
+
+    if (!scholarship) {
+      return res.status(404).json({ message: "Scholarship not found" });
+    }
+
+    if (scholarship.adminId.toString() !== user._id.toString()) {
+      return res.status(403).json({ message: "Not authorized to delete this scholarship" });
+    }
+
+    await Application.deleteMany({ scholarshipId: id });
+
+    await Scholarship.findByIdAndDelete(id);
+
+    res.status(200).json({ 
+      message: "Scholarship and all associated applications deleted successfully" 
+    });
+  } catch (error: any) {
+    console.error("Delete Error:", error);
+    res.status(500).json({ message: error.message || "Server Error" });
+  }
+};

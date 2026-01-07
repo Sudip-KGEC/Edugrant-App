@@ -52,6 +52,13 @@ export const updateApplicationStatus = async (applicationId: string, status: str
   return response.data;
 };
 
+export const deleteScholarship = async (scholarshipId: string) => {
+  const response = await adminApi.delete(`/api/scholarships/${scholarshipId}` , {
+    params: { scholarshipId }
+  });
+  return response.data;
+};
+
 
 adminApi.defaults.withCredentials = true;
 

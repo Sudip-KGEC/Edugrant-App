@@ -73,7 +73,7 @@ const NotificationCenter = () => {
             {/* Dropdown Menu */}
            {isOpen && (
   <>
-    {/* Backdrop: High z-index to ensure it covers everything under the menu */}
+  
     <div className="fixed inset-0 z-40 bg-slate-900/5 backdrop-blur-[1px]" onClick={() => setIsOpen(false)} />
     
     <motion.div 
@@ -81,10 +81,8 @@ const NotificationCenter = () => {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 10, scale: 0.95 }}
       className={`
-        /* Mobile: Centered on screen */
+      
         fixed top-20 left-1/2 -translate-x-1/2 w-[calc(100vw-2rem)] max-w-100]
-        
-        /* Desktop: Aligned to the right of the button */
         sm:absolute sm:top-full sm:left-auto sm:right-0 sm:translate-x-0 
         sm:w-85 sm:mt-3 sm:min-w-[320px]
         
@@ -125,7 +123,7 @@ const NotificationCenter = () => {
       </div>
 
       {/* --- List Area --- */}
-      <div className="max-h-112 overflow-y-auto scrollbar-thin scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
+      <div className="max-h-112 overflow-y-auto scrollbar-hide scrollbar-thumb-slate-200 dark:scrollbar-thumb-slate-700">
           {notifications.length === 0 ? (
               <div className="p-12 text-center">
                   <div className="flex justify-center mb-3">

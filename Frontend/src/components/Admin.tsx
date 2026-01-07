@@ -1,9 +1,33 @@
-import React from 'react'
+import React ,{ useEffect, useState } from 'react'
 import { Plus, Trash2, Users } from 'lucide-react'
+import { deleteScholarship } from '../services/adminApi';
 
-const Admin = ({ setShowAdminModal, scholarships, currentUser }) => {
-  // Filter scholarships 
+const Admin = ({ setLoading ,setShowAdminModal, scholarships, currentUser }) => {
+
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const myScholarships = scholarships.filter(s => s.adminId === currentUser?.id || s.adminId === currentUser?._id);
+
+
+
+  const handleDelete = async (id) => {
+
+    setLoading(true); 
+    setIsDeleting(true);
+    try {
+      await deleteScholarship(id);
+      window.location.reload();
+    } catch (error) {
+      console.error("Delete Error:", error);
+      alert("Failed to delete scholarship. Please try again.");
+    }
+    finally {
+      setIsDeleting(false);
+      setLoading(false);
+    }
+  };
+
+
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 scrollbar-hide">
@@ -73,8 +97,14 @@ const Admin = ({ setShowAdminModal, scholarships, currentUser }) => {
                         <button className="p-2 text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-teal-50 dark:hover:bg-teal-900/20 rounded-lg transition-colors" title="View Applicants">
                           <Users className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Delete">
-                          <Trash2 className="w-4 h-4" />
+                        <button
+                          onClick={()=>handleDelete(s._id)}
+                          disabled={isDeleting}
+                          className={`p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors ${isDeleting ? 'opacity-50 cursor-not-allowed' : ''
+                            }`}
+                          title="Delete"
+                        >
+                          <Trash2 className={`w-4 h-4 ${isDeleting ? 'animate-pulse' : ''}`} />
                         </button>
                       </div>
                     </td>

@@ -1,8 +1,18 @@
 
-import React from 'react'
+import React , {useEffect, useRef} from 'react'
 import { X, ArrowLeft } from 'lucide-react'
 
-const AuthModal = ({ authStep, setAuthStep, authEmail, setAuthEmail, authOtp, setAuthOtp, handleSendOtp, handleVerifyOtp, handleBack, setShowAuthModal, t, setProfileData, profileData, handleProfileSubmit }) => {
+const AuthModal = ({  authStep, setAuthStep, authEmail, setAuthEmail, authOtp, setAuthOtp, handleSendOtp, handleVerifyOtp, handleBack, setShowAuthModal, t, setProfileData, profileData, handleProfileSubmit }) => {
+
+  const otpInputRef = useRef<HTMLInputElement>(null);
+
+useEffect(() => {
+  if (authStep === 'otp') {
+    otpInputRef.current?.focus();
+  }
+}, [authStep]);
+
+
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 scroballbar-hide">
       <div className="bg-white dark:bg-slate-900 rounded-2xl w-full max-w-md p-6 shadow-2xl border border-slate-200 dark:border-slate-800 transition-colors">
@@ -54,6 +64,7 @@ const AuthModal = ({ authStep, setAuthStep, authEmail, setAuthEmail, authOtp, se
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Enter OTP</label>
               <input
+                ref={otpInputRef}
                 type="text"
                 value={authOtp}
                 onChange={(e) => setAuthOtp(e.target.value)}
