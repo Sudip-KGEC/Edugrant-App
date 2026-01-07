@@ -20,7 +20,7 @@ const Navbar = ({
   return (
     <nav className="bg-white dark:bg-slate-900 shadow-sm sticky top-0 z-40 border-b border-transparent dark:border-slate-800 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-3 lg:px-8">
-        <div className="flex justify-evenly gap-3 md:justify-between h-16">
+        <div className="flex justify-between h-16">
           
           {/* Navbar Logo */}
           <div className="flex items-center cursor-pointer" onClick={() => setView('home')}>
