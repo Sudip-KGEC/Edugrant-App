@@ -4,8 +4,8 @@
   "description": "",
   "main": "src/server.ts",
   "scripts": {
-    "start": "node src/server.ts", 
-     "dev": "nodemon src/server.ts",
+    "start": "node src/server.ts",
+    "dev": "nodemon src/server.ts",
     "build": "echo 'Skipping build...'"
   },
   "keywords": [],
@@ -24,6 +24,7 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.1.1",
+    "node-cron": "^4.2.1",
     "nodemailer": "^7.0.12",
     "resend": "^6.6.0"
   },

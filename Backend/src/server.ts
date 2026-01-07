@@ -8,7 +8,8 @@ import connectDB from './config/db';
 import cookieParser from 'cookie-parser'; 
 import userRoutes from './routes/userRoutes';
 import scholarshipRoutes from './routes/scholarshipRoutes';
-import chatRoutes from './routes/chatRoutes'
+import chatRoutes from './routes/chatRoutes';
+import notificationRoutes from './routes/notificationRoutes';
 
 
 const app: Application = express();
@@ -35,6 +36,7 @@ app.get('/', (req: Request, res: Response) => {
 });
 
 //Routes 
+app.use('/api/notifications', notificationRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/scholarships', scholarshipRoutes);

@@ -52,6 +52,37 @@ export const getUserProfile = async () => {
   }
 };
 
+export const getNotifications = async () => {
+  const token = localStorage.getItem('token'); 
+  const response = await api.get('/api/notifications', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  
+  return response.data; 
+};
+
+export const markAsRead = async () => {
+  const token = localStorage.getItem('token'); 
+  await api.put('/api/notifications/mark-as-read', {}, {
+    headers: {
+        
+      Authorization: `Bearer ${token}`
+    }
+  });
+};
+
+
+export const clearAllNotifications = async () => {
+  const token = localStorage.getItem('token'); 
+  await api.delete('/api/notifications/clear-all', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+};
+
 // --- SCHOLARSHIP FUNCTIONS
 
 export const fetchScholarships = async (adminId?: string) => {

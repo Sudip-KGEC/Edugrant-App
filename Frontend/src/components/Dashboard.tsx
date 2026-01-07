@@ -52,7 +52,6 @@ const Dashboard = ({ t, currentUser, scholarships, setView }) => {
   const fetchStudentData = useCallback(async () => {
     try {
       const apps = await getStudentApplications();
-      console.log("FROM API (Student Apps):", apps);
       setMyApplications(apps);
     } catch (error) {
       console.error("Student Fetch Error:", error);

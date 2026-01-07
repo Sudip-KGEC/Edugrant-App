@@ -1,25 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import {
-  GraduationCap,
-  X,
-  Globe,
-  LogOut,
-  User as UserIcon,
-  CheckCircle,
-  ChevronDown,
-  Sun,
-  Moon,
-  UserX,
-  UserCheck,
-  Menu, House, Search, LayoutDashboard
-} from 'lucide-react';
-
-import { motion, AnimatePresence } from 'framer-motion';
-
-
 import { TRANSLATIONS } from './constants';
 import {Application, User, Language } from './types';
-import { api, fetchScholarships, getUserProfile, registerUser, verifyOtp, createScholarship, sendOtp, logoutUser } from './services/api';
+import { api, fetchScholarships, getUserProfile, registerUser, verifyOtp, sendOtp, logoutUser } from './services/api';
 
 import ChatBot from './components/ChatBot';
 import LoadingOverlay from './components/Loading';
@@ -27,9 +9,9 @@ import Home from './components/Home';
 import Browse from './components/Browse';
 import Dashboard from './components/Dashboard';
 import Admin from './components/Admin';
-import MobileNavLink from './components/MobileNavLink';
 import AddScholarshipModal from './components/AddScholarshipModal';
 import AuthModal from './components/AuthModal';
+import Navbar from './components/Navbar';
 
 const App = () => {
 
@@ -45,10 +27,8 @@ const App = () => {
   const [scholarships, setScholarships] = useState([]);
 
   // // UI State
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentLang, setCurrentLang] = useState<Language>('en');
-  const [isLangMenuOpen, setIsLangMenuOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   const t = TRANSLATIONS[currentLang];
@@ -193,12 +173,6 @@ const App = () => {
     }
   };
 
- 
-
-  const getLangCodeDisplay = (code: Language) => {
-    const map: Record<Language, string> = { en: 'ENG', hi: 'HIN', bn: 'BEN', ta: 'TAM', or: 'ODI', ml: 'MAL' };
-    return map[code];
-  };
   
   const handleBack = () => {
     if (authStep === 'profile') {
@@ -342,207 +316,19 @@ const App = () => {
       {/* 1. Global Loader */}
       {isLoading && <LoadingOverlay />}
       {/* Navbar */}
-      <nav className="bg-white dark:bg-slate-900 shadow-sm sticky top-0 z-40 border-b border-transparent dark:border-slate-800 transition-colors">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            {/* Navbar Logo */}
-            <div className="flex items-center cursor-pointer" onClick={() => setView('home')}>
-              <GraduationCap className="h-8 w-8 text-teal-600 dark:text-teal-500 mr-2 animate-float" />
-              <span className="font-bold text-xl text-teal-900 dark:text-teal-400 tracking-tight">{t.title}</span>
-            </div>
-
-            <div className="flex items-center gap-4">
-              {/* Desktop Nav Links */}
-              <div className="hidden md:flex space-x-4">
-                <button onClick={() => setView('home')} className={`${view === 'home' ? 'text-teal-600 dark:text-teal-400' : 'text-slate-600 dark:text-slate-400'} hover:text-teal-600 dark:hover:text-teal-400 font-medium transition-colors`}>{t.home}</button>
-                <button onClick={() => setView('browse')} className={`${view === 'browse' ? 'text-teal-600 dark:text-teal-400' : 'text-slate-600 dark:text-slate-400'} hover:text-teal-600 dark:hover:text-teal-400 font-medium transition-colors`}>{t.browse}</button>
-                {currentUser && (
-                  <button onClick={() => setView('dashboard')} className={`${view === 'dashboard' ? 'text-teal-600 dark:text-teal-400' : 'text-slate-600 dark:text-slate-400'} hover:text-teal-600 dark:hover:text-teal-400 font-medium transition-colors`}>{t.dashboard}</button>
-                )}
-                {/* Secret Admin Link for Demo */}
-                <button
-                  onClick={() => {
-                    if (!currentUser) {
-                      setShowAuthModal(true);
-                    } else if (currentUser.role === 'admin') {
-                      setView('admin');
-                    } else {
-                      alert(`Access Denied. Your role is: ${currentUser.role}`);
-                    }
-                  }}
-                  className="text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 text-xs transition-colors"
-                >
-                  Admin Panel
-                </button>
-              </div>
-              {/* Theme Toggle */}
-              <button
-                onClick={toggleTheme}
-                className="p-2 rounded-full text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
-                title="Toggle Theme"
-              >
-                {theme === 'light' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
-              </button>
-              {/* Language Toggle */}
-              <div className="relative">
-                <button
-                  onClick={() => setIsLangMenuOpen(!isLangMenuOpen)}
-                  className="flex items-center gap-1.5 px-3 py-2 text-slate-600 dark:text-slate-400 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-full transition-all border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
-                >
-                  <Globe className="w-4 h-4" />
-                  <span className="text-sm font-medium uppercase">{getLangCodeDisplay(currentLang)}</span>
-                  <ChevronDown className={`w-3 h-3 transition-transform ${isLangMenuOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                {isLangMenuOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-10"
-                      onClick={() => setIsLangMenuOpen(false)}
-                    />
-                    <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900 rounded-xl shadow-xl py-2 border border-slate-100 dark:border-slate-700 z-20 origin-top-right transition-colors">
-                      <div className="px-4 py-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                        Select Language
-                      </div>
-                      {[
-                        { code: 'en', label: 'English', native: 'English' },
-                        { code: 'hi', label: 'Hindi', native: 'हिन्दी' },
-                        { code: 'bn', label: 'Bengali', native: 'বাংলা' },
-                        { code: 'ta', label: 'Tamil', native: 'தமிழ்' },
-                        { code: 'or', label: 'Odia', native: 'ଓଡ଼ିଆ' },
-                        { code: 'ml', label: 'Malayalam', native: 'മലയാളം' }
-                      ].map((lang) => (
-                        <button
-                          key={lang.code}
-                          onClick={() => {
-                            setCurrentLang(lang.code as Language);
-                            setIsLangMenuOpen(false);
-                          }}
-                          className={`w-full text-left px-4 py-3 text-sm flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors
-                             ${currentLang === lang.code ? 'text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-900/20' : 'text-slate-700 dark:text-slate-300'}
-                           `}
-                        >
-                          <div className="flex flex-col">
-                            <span className="font-medium">{lang.native}</span>
-                            <span className="text-xs text-slate-500 dark:text-slate-500">{lang.label}</span>
-                          </div>
-                          {currentLang === lang.code && <CheckCircle className="w-4 h-4 text-teal-600 dark:text-teal-500" />}
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {/* User Auth */}
-              {currentUser ? (
-                <div className=" hidden md:flex items-center gap-1">
-                  <div className=" h-4 w-6 md:h-10 md:w-10 rounded-full bg-teal-100 dark:bg-teal-900 flex items-center justify-center text-teal-700 dark:text-teal-300 font-bold">
-                    <UserCheck className="inline-block h-4 w-4 md:h-5 md:w-5 ml-1" />
-                  </div>
-                  <button onClick={handleLogout} className="text-sm text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 transition-colors">
-                    <LogOut className="w-5 h-5 md:w-6 md:h-6" />
-                  </button>
-                </div>
-              ) : (
-                <button onClick={handleLoginStart} className="bg-teal-600 hidden md:flex text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-teal-700 transition-colors">
-                  <UserX className="w-4 h-4 inline-block mr-1" />
-                </button>
-              )}
-
-              {/* Mobile Menu Button */}
-              <button
-                className="md:hidden p-2 text-slate-600 dark:text-slate-400"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-              >
-                {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-              </button>
-
-              {/* Mobile Menu */}
-              <AnimatePresence>
-                {isMenuOpen && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-
-                    className="absolute top-16 left-0 w-full z-50 overflow-y-auto scrollbar-hide border-b 
-                 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md 
-                 border-slate-200 dark:border-slate-800 transition-colors shadow-xl"
-                  >
-                    <div className="flex flex-col p-4 space-y-4">
-                      {/* User Section */}
-                      <div className="pb-2 border-b border-slate-100 dark:border-slate-800">
-                        {currentUser ? (
-                          <div className="flex items-center justify-between px-2">
-                            <div className="flex items-center gap-3">
-                              <div className="h-10 w-10 rounded-full bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center text-teal-700 dark:text-teal-300 font-bold">
-                                <UserCheck size={20} />
-                              </div>
-                              <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                                {currentUser.name || 'Profile'}
-                              </span>
-                            </div>
-                            <button
-                              onClick={handleLogout}
-                              className="p-2 text-slate-500 hover:text-red-500 transition-colors"
-                            >
-                              <LogOut size={20} />
-                            </button>
-                          </div>
-                        ) : (
-                          <button
-                            onClick={handleLoginStart}
-                            className="w-full bg-teal-600 text-white py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-teal-500/20"
-                          >
-                            <UserX size={18} /> Sign In
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Navigation Links */}
-                      <div className="space-y-1">
-                        <MobileNavLink
-                          icon={<House size={18} />}
-                          label={t.home}
-                          active={view === 'home'}
-                          onClick={() => { setView('home'); setIsMenuOpen(false); }}
-                        />
-                        <MobileNavLink
-                          icon={<Search size={18} />}
-                          label={t.browse}
-                          active={view === 'browse'}
-                          onClick={() => { setView('browse'); setIsMenuOpen(false); }}
-                        />
-                        {currentUser && (
-                          <MobileNavLink
-                            icon={<LayoutDashboard size={18} />}
-                            label={t.dashboard}
-                            active={view === 'dashboard'}
-                            onClick={() => { setView('dashboard'); setIsMenuOpen(false); }}
-                          />
-                        )}
-                      </div>
-                      {/* Admin Panel Link */}
-                      <button
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          if (!currentUser) setShowAuthModal(true);
-                          else if (currentUser.role === 'admin') setView('admin');
-                        }}
-                        className="w-full text-left text-xs font-semibold uppercase tracking-widest p-3 text-slate-400 dark:text-slate-500 hover:text-teal-500 border-t border-slate-100 dark:border-slate-800 mt-2"
-                      >
-                        Admin Panel
-                      </button>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-            </div>
-          </div>
-        </div>
-      </nav>
+     <Navbar 
+      view={view} 
+      setView={setView} 
+     currentUser={currentUser}
+      handleLogout={handleLogout}
+       handleLoginStart={handleLoginStart}
+         setShowAuthModal={setShowAuthModal}
+          theme={theme} 
+          toggleTheme={toggleTheme} 
+          currentLang={currentLang} 
+          setCurrentLang={setCurrentLang} 
+          t={t}
+     />
 
       {/* Main Content */}
       <main className="grow">

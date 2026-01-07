@@ -1,6 +1,7 @@
 
 import { Request, Response } from 'express';
 import Scholarship from '../models/Scholarship';
+import Notification from '../models/Notification';
 import User from '../models/User';
 import Application from '../models/Application';
 
@@ -88,7 +89,7 @@ export const addScholarship = async (req: Request, res: Response) => {
     const user = (req as any).user;
     const { name, provider, amount, deadline, category, gpaRequirement, degreeLevel, description, eligibility, officialUrl } = req.body;
 
-    const scholarship = new Scholarship({
+    const newScholarship = new Scholarship({
       name,
       provider,
       amount: Number(amount),
@@ -102,7 +103,20 @@ export const addScholarship = async (req: Request, res: Response) => {
       adminId: user._id
     });
 
-    const savedScholarship = await scholarship.save();
+    const matchingStudents = await User.find({
+    role: 'student',
+    currentDegree: newScholarship.degreeLevel 
+  });
+
+  const notifications = matchingStudents.map(student => ({
+    recipientId: student._id,
+    title: 'New Match Found!',
+    message: `A new scholarship "${newScholarship.name}" matches your profile.`,
+    type: 'MATCH'
+  }));
+
+    await Notification.insertMany(notifications);
+    const savedScholarship = await newScholarship.save();
     res.status(201).json(savedScholarship);
   } catch (error: any) {
     res.status(400).json({ message: error.message || 'Invalid Data' });
