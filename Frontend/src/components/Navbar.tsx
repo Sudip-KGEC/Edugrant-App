@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import NotificationCenter from './NotificationCenter';
+import MobileNavLink from './MobileNavLink';
 
 
 const Navbar = ({
@@ -18,8 +19,8 @@ const Navbar = ({
 
   return (
     <nav className="bg-white dark:bg-slate-900 shadow-sm sticky top-0 z-40 border-b border-transparent dark:border-slate-800 transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-3 lg:px-8">
+        <div className="flex justify-evenly h-16">
           
           {/* Navbar Logo */}
           <div className="flex items-center cursor-pointer" onClick={() => setView('home')}>
@@ -27,7 +28,7 @@ const Navbar = ({
             <span className="font-bold text-xl text-teal-900 dark:text-teal-400 tracking-tight">{t.title}</span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center md:gap-4">
             {/* Desktop Nav Links */}
             <div className="hidden md:flex space-x-4">
               <button onClick={() => setView('home')} className={`${view === 'home' ? 'text-teal-600 dark:text-teal-400' : 'text-slate-600 dark:text-slate-400'} hover:text-teal-600 dark:hover:text-teal-400 font-medium transition-colors`}>{t.home}</button>
@@ -183,16 +184,5 @@ const Navbar = ({
   );
 };
 
-// Internal Helper Component for Mobile Links
-const MobileNavLink = ({ icon, label, active, onClick }: any) => (
-  <button
-    onClick={onClick}
-    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-      active ? 'bg-teal-50 text-teal-600 dark:bg-teal-900/20 dark:text-teal-400' : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-    }`}
-  >
-    {icon} {label}
-  </button>
-);
 
 export default Navbar;

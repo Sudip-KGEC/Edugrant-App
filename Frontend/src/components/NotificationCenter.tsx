@@ -53,7 +53,7 @@ const NotificationCenter = () => {
     };
 
     return (
-        <div className="relative sm:mx-auto">
+        <div className="relative">
             {/* Bell Icon & Badge */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
