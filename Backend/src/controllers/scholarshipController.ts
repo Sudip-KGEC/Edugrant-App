@@ -162,7 +162,8 @@ export const updateApplicationStatus = async (req: Request, res: Response) => {
 
 
 
-export const deleteScholarship = async (req: Request, res: Response) => {
+
+ export const deleteScholarship = async (req: Request, res: Response) => {
   try {
     const { id } = req.params; 
     const user = (req as any).user;

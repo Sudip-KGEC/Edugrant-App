@@ -1,15 +1,17 @@
 {
   "compilerOptions": {
     "target": "es2018",
-    "module": "commonjs", 
-    "rootDir": "./",          
+    "module": "commonjs",
+    "rootDir": "./api",
     "outDir": "./dist",
+
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "lib": ["ESNext", "DOM"],
-    "moduleResolution": "node" 
+
+    "lib": ["ESNext"],
+    "moduleResolution": "node"
   },
-  "include": ["api/**/*.ts", "src/**/*.ts"], 
+  "include": ["api/**/*.ts"],
   "exclude": ["node_modules"]
 }

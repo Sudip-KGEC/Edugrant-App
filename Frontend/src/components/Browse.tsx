@@ -94,66 +94,87 @@ const Browse = ({ t, scholarships, currentUser, searchQuery, setSearchQuery, app
                   )}
                 </div>
 
+            
                 {/* Footer Action */}
                 <div className="mt-auto border-t border-slate-100 dark:border-slate-800 p-4 flex justify-between items-center bg-slate-50/30 dark:bg-slate-900/30">
-                  {s.officialUrl ? (
-                    <a
-                      href={s.officialUrl.startsWith('http') ? s.officialUrl : `https://${s.officialUrl}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-md text-teal-600 dark:text-teal-400 flex items-center gap-1 hover:underline font-bold"
-                    >
-                      Website <ExternalLink className="w-3 h-3" />
-                    </a>
-                  ) : <div />}
-                  
-                  {currentUser?.role === 'admin' ? (
-                    <div className="mt-4 p-3 rounded-xl bg-blue-900/20 border border-blue-800/50">
-                      <div className="flex items-center justify-between gap-3 w-full">
-                        <span className="text-sm text-slate-400 whitespace-nowrap shrink-0">
-                          Apply here:
-                        </span>
-                        <div className="min-w-0 flex-1 flex justify-end">
-                          <a
-                            href={s.officialUrl?.startsWith('http') ? s.officialUrl : `https://${s.officialUrl}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-400 font-bold hover:underline truncate text-sm text-right"
-                            title={s.officialUrl}
-                          >{s.officialUrl?.length > 10
-                            ? `${s.officialUrl.substring(0, 14)}...`
-                            : s.officialUrl
-                            }
-                          </a>
-                        </div>
 
-                      </div>
-                    </div>
-                  )
-                    : (
-                      <>
-                        {hasApplied ? (
-                          <button
-                            disabled
-                            className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 px-5 py-2 rounded-lg text-sm font-bold border border-slate-200 dark:border-slate-700"
-                          >
-                            <CheckCircle className="w-4 h-4 text-emerald-500" />
-                            {appliedData?.status || "Applied"}
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => handleApply(s._id)}
-                            disabled={isLoading || !currentUser}
-                            className={`px-6 py-2 rounded-lg text-sm font-bold transition-all shadow-sm active:scale-95 ${isLoading || !currentUser
-                              ? 'bg-slate-400 cursor-not-allowed text-white'
+                  {/* LEFT SIDE (INFO / LINK) */}
+                  {s.officialUrl?.trim() ? (
+                    <p className="text-xs text-teal-500 font-medium">
+                      🔗 Apply through official website
+                    </p>
+                  ) : (
+                    <div />
+                  )}
+
+                  {/* RIGHT SIDE ACTION */}
+                  {currentUser?.role === 'admin' ? (
+
+                    // 🔵 ADMIN VIEW
+                    s.officialUrl ? (
+                      <a
+                        href={s.officialUrl.startsWith('http') ? s.officialUrl : `https://${s.officialUrl}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 font-bold hover:underline text-sm truncate max-w-[180px]"
+                        title={s.officialUrl}
+                      >
+                        {s.officialUrl.length > 20
+                          ? `${s.officialUrl.substring(0, 20)}...`
+                          : s.officialUrl}
+                      </a>
+                    ) : (
+                      <span className="text-xs text-slate-400">No external link</span>
+                    )
+
+                  ) : (
+
+                    // 🟢 STUDENT VIEW
+                    <>
+                      {s.officialUrl?.trim() ? (
+
+                        // 🔗 OFFICIAL WEBSITE MODE
+                        <a
+                          href={s.officialUrl.startsWith('http') ? s.officialUrl : `https://${s.officialUrl}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-bold bg-teal-600 text-white hover:bg-teal-700 transition"
+                        >
+                          Official Website
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+
+                      ) : hasApplied ? (
+
+                        // APPLIED STATE
+                        <button
+                          disabled
+                          className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 px-5 py-2 rounded-lg text-sm font-bold border border-slate-200 dark:border-slate-700"
+                        >
+                          <CheckCircle className="w-4 h-4 text-emerald-500" />
+                          {appliedData?.status || "Applied"}
+                        </button>
+
+                      ) : (
+
+                        //  APPLY BUTTON
+                        <button
+                          onClick={() => handleApply(s._id)}
+                          disabled={isLoading}
+                          className={`px-6 py-2 rounded-lg text-sm font-bold transition-all shadow-sm active:scale-95 ${isLoading || !currentUser
+                              ? 'bg-red-900 cursor-not-allowed text-white'
                               : 'bg-teal-600 hover:bg-teal-700 text-white hover:shadow-teal-200 dark:hover:shadow-none'
-                              }`}
-                          >
-                            {!currentUser ? 'Login to Apply' : (isLoading ? 'Processing...' : t.apply)}
-                          </button>
-                        )}
-                      </>
-                    )}
+                            }`}
+                        >
+                          {!currentUser
+                            ? 'Login to Apply'
+                            : (isLoading ? 'Processing...' : t.apply)}
+                        </button>
+
+                      )}
+                    </>
+
+                  )}
                 </div>
               </div>
             );

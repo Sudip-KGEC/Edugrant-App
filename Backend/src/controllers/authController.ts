@@ -179,7 +179,85 @@ export const getProfile = async (req: Request, res: Response) => {
   }
 };
 
-export const logout = (req: Request, res: Response) => {
-  res.cookie('token', '', { expires: new Date(0), httpOnly: true });
-  res.status(200).json({ message: "Logged out" });
+
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const userId = (req as any).user?.id;
+
+    if (!userId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    const existingUser = await User.findById(userId);
+
+    if (!existingUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (req.body?.email || req.body?.role) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and role cannot be updated",
+      });
+    }
+
+    existingUser.name = req.body?.name ?? existingUser.name;
+    existingUser.college = req.body?.college ?? existingUser.college;
+    existingUser.cgpa = req.body?.cgpa ?? existingUser.cgpa;
+    existingUser.class12Marks = req.body?.class12Marks ?? existingUser.class12Marks;
+    existingUser.highestDegree = req.body?.highestDegree ?? existingUser.highestDegree;
+    existingUser.currentDegree = req.body?.currentDegree ?? existingUser.currentDegree;
+    existingUser.fieldOfStudy = req.body?.fieldOfStudy ?? existingUser.fieldOfStudy;
+    existingUser.organization = req.body?.organization ?? existingUser.organization;
+    existingUser.department = req.body?.department ?? existingUser.department;
+    existingUser.designation = req.body?.designation ?? existingUser.designation;
+    existingUser.employeeId = req.body?.employeeId ?? existingUser.employeeId;
+
+    const updatedUser = await existingUser.save();
+
+    res.status(200).json({
+      success: true,
+      user: {
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        college: updatedUser.college,
+        cgpa: updatedUser.cgpa,
+        class12Marks: updatedUser.class12Marks,
+        highestDegree: updatedUser.highestDegree,
+        currentDegree: updatedUser.currentDegree,
+        role: updatedUser.role,
+        fieldOfStudy: updatedUser.fieldOfStudy,
+        organization: updatedUser.organization,
+        department: updatedUser.department,
+        designation: updatedUser.designation,
+        employeeId: updatedUser.employeeId,
+        appliedScholarships: updatedUser.appliedScholarships
+      }
+    });
+
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const logout = (req: Request, res: Response): Response => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    partitioned: true,
+    path: "/",
+  });
+
+  return res.status(200).json({ message: "Logged out successfully" });
 };

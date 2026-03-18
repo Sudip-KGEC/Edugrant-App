@@ -1,3 +1,3 @@
 // api/index.ts
-import app from '../src/server'; // Adjust path to point to your server.ts
+import app from '../src/server';
 export default app;

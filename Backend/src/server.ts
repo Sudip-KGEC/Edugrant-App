@@ -15,6 +15,7 @@ import notificationRoutes from './routes/notificationRoutes';
 const app: Application = express();
 connectDB();
 
+
 // Middleware
 app.set("trust proxy", 1);
 app.use(cors({

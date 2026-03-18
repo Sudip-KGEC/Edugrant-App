@@ -39,6 +39,13 @@ export const registerUser = async (userData: any) => {
   return response.data;
 };
 
+export const updateProfile = async (userData: any) => {
+  const response = await api.put('/api/users/update-profile', userData, {
+    withCredentials: true 
+  });
+  return response.data;
+};
+
 export const logoutUser = async () => {
   await api.post('/api/users/logout');
 };

@@ -5,6 +5,7 @@
   "main": "src/server.ts",
   "scripts": {
     "start": "node src/server.ts",
+    "seed": "ts-node src/config/seedScholarships.ts",
     "dev": "nodemon src/server.ts",
     "build": "echo 'Skipping build...'"
   },

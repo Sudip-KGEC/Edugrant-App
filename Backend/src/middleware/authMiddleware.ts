@@ -12,6 +12,7 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
   
   try {
     const secret = process.env.JWT_SECRET;
+    
     if (!secret) {
       console.error("CRITICAL: JWT_SECRET is not defined in .env");
       return res.status(500).json({ message: "Internal server configuration error" });
