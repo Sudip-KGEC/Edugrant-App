@@ -55,25 +55,7 @@ React (planned / in progress)
 
 Modern UI structure
 
-📂 Project Structure
-EDUGRANT/
-│
-├── Backend/
-│   ├── src/
-│   │   ├── config/          # Database configuration
-│   │   ├── controllers/     # Business logic
-│   │   ├── middleware/      # Auth & security middleware
-│   │   ├── models/          # MongoDB schemas
-│   │   ├── routes/          # API routes
-│   │   ├── utils/           # Helper utilities
-│   │   └── server.ts        # App entry point
-│   ├── tsconfig.json
-│   └── package.json
-│
-├── Frontend/
-│   └── (React app – upcoming)
-│
-└── README.md
+
 
 ⚙️ Installation & Setup
 1️⃣ Clone the repository
